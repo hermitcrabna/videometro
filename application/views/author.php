@@ -4,13 +4,47 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Contenuti dell'autore su VideoMetro." />
-  <link rel="canonical" href="<?= htmlspecialchars($siteUrl . $basePath . '/protagonisti/' . ($authorSlug ?: '')) ?>" />
+  <meta name="description" content="<?= htmlspecialchars($pageDescription ?? "Contenuti dell'autore su VideoMetro.") ?>" />
+  <link rel="canonical" href="<?= htmlspecialchars($canonical ?? ($siteUrl . $basePath . '/protagonisti/' . ($authorSlug ?: ''))) ?>" />
+  <meta name="robots" content="<?= htmlspecialchars($robots ?? 'index, follow') ?>" />
+  <meta property="og:type" content="profile">
+  <meta property="og:title" content="<?= htmlspecialchars($pageTitle ?? 'VideoMetro – Autore') ?>">
+  <meta property="og:description" content="<?= htmlspecialchars($pageDescription ?? "Contenuti dell'autore su VideoMetro.") ?>">
+  <meta property="og:url" content="<?= htmlspecialchars($canonical ?? ($siteUrl . $basePath . '/protagonisti/' . ($authorSlug ?: ''))) ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <script type="application/ld+json" id="schemaPerson"></script>
   <script type="application/ld+json" id="schemaVideos"></script>
-  <title>VideoMetro – Autore</title>
+  <?php
+    $personSchema = [
+      '@context' => 'https://schema.org',
+      '@type' => 'Person',
+      'name' => $authorName ?: null,
+      'image' => $authorImg ?: null,
+      'url' => $canonical ?? null,
+      'sameAs' => array_values(array_filter([$authorFb ?? null, $authorLi ?? null])),
+    ];
+    $items = [];
+    $pos = 1;
+    foreach ($authorItems as $v) {
+      $slug = $v['slug'] ?? '';
+      if (!$slug) continue;
+      $items[] = [
+        '@type' => 'ListItem',
+        'position' => $pos++,
+        'url' => $siteUrl . $basePath . '/video/' . $slug,
+      ];
+      if ($pos > 50) break;
+    }
+    $listSchema = [
+      '@context' => 'https://schema.org',
+      '@type' => 'ItemList',
+      'itemListElement' => $items,
+    ];
+  ?>
+  <script type="application/ld+json"><?= json_encode($personSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
+  <script type="application/ld+json"><?= json_encode($listSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
+  <title><?= htmlspecialchars($pageTitle ?? 'VideoMetro – Autore') ?></title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
     :root {

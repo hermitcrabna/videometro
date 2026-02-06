@@ -23,6 +23,13 @@ class Authors extends CI_Controller {
     ]));
     $categories = is_array($categoriesRaw) ? $categoriesRaw : (is_array($categoriesRaw['data'] ?? null) ? $categoriesRaw['data'] : []);
 
+    $siteUrl = vm_site_url();
+    $basePath = vm_base_path();
+    $canonical = $siteUrl . $basePath . '/protagonisti';
+    $title = 'VideoMetro – Protagonisti';
+    $description = 'I protagonisti di VideoMetro.';
+    $robots = ($searchTerm !== '') ? 'noindex, follow' : 'index, follow';
+
     $data = [
       'aziendaId' => $aziendaId,
       'basePath' => vm_base_path(),
@@ -31,6 +38,10 @@ class Authors extends CI_Controller {
       'authorsItems' => $authorsItems,
       'limit' => $limit,
       'categories' => $categories,
+      'pageTitle' => $title,
+      'pageDescription' => $description,
+      'canonical' => $canonical,
+      'robots' => $robots,
     ];
 
     $this->load->view('authors', $data);

@@ -59,6 +59,13 @@ class Blog extends CI_Controller {
     ]));
     $categories = is_array($categoriesRaw) ? $categoriesRaw : (is_array($categoriesRaw['data'] ?? null) ? $categoriesRaw['data'] : []);
 
+    $siteUrl = vm_site_url();
+    $basePath = vm_base_path();
+    $canonical = $siteUrl . $basePath . '/blog';
+    $title = 'VideoMetro – Blog & Gallery';
+    $description = 'Blog e gallery di VideoMetro.';
+    $robots = ($searchTerm !== '' || $featured !== '') ? 'noindex, follow' : 'index, follow';
+
     $data = [
       'aziendaId' => $aziendaId,
       'basePath' => vm_base_path(),
@@ -71,6 +78,10 @@ class Blog extends CI_Controller {
       'limit' => $limit,
       'isHomeNoFilters' => $isHomeNoFilters,
       'categories' => $categories,
+      'pageTitle' => $title,
+      'pageDescription' => $description,
+      'canonical' => $canonical,
+      'robots' => $robots,
     ];
 
     $this->load->view('blog', $data);

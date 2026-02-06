@@ -16,7 +16,9 @@ class Home extends CI_Controller {
     $featured = trim((string)$this->input->get('featured', true));
 
     $subcatSlug = $subcatSlug !== null ? trim((string)$subcatSlug) : '';
+    $subcatName = '';
 
+    // Resolve category slug to ids
     if ($subcatSlug !== '') {
       $subcats = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_subcategory?' . http_build_query([
         'azienda_id' => $aziendaId,
@@ -27,8 +29,25 @@ class Home extends CI_Controller {
         if ($slug === $subcatSlug) {
           $subcatId = (string)($s['subcat_id'] ?? $s['id'] ?? '');
           $catId = (string)($s['cat_id'] ?? $s['category_id'] ?? '');
+          $subcatName = (string)$name;
           break;
         }
+      }
+    }
+
+    // Resolve ids from query to slug for canonical
+    if ($subcatSlug === '' && $subcatId !== '') {
+      $subcats = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_subcategory?' . http_build_query([
+        'azienda_id' => $aziendaId,
+      ])) ?? [];
+      foreach ($subcats as $s) {
+        $sid = (string)($s['subcat_id'] ?? $s['id'] ?? '');
+        if ($sid !== $subcatId) continue;
+        $name = $s['sub_categoria'] ?? $s['subcategory'] ?? '';
+        $subcatSlug = $s['slug'] ?? vm_slugify((string)$name);
+        $subcatName = (string)$name;
+        $catId = (string)($s['cat_id'] ?? $s['category_id'] ?? $catId);
+        break;
       }
     }
 
@@ -71,11 +90,30 @@ class Home extends CI_Controller {
     ]));
     $categories = is_array($categoriesRaw) ? $categoriesRaw : (is_array($categoriesRaw['data'] ?? null) ? $categoriesRaw['data'] : []);
 
+    $siteUrl = vm_site_url();
+    $basePath = vm_base_path();
+    $canonical = $siteUrl . ($basePath === '' ? '/' : $basePath . '/');
+    $title = 'VideoMetro – Feed';
+    $description = 'Video e contenuti di VideoMetro.';
+
+    if ($subcatSlug !== '') {
+      $canonical = $siteUrl . $basePath . '/video/categoria/' . $subcatSlug;
+      if ($subcatName !== '') {
+        $title = 'VideoMetro – ' . $subcatName;
+        $description = 'Video nella categoria ' . $subcatName . '.';
+      }
+    }
+
+    $robots = 'index, follow';
+    if ($searchTerm !== '' || $featured !== '') {
+      $robots = 'noindex, follow';
+    }
+
     $data = [
       'aziendaId' => $aziendaId,
-      'basePath' => vm_base_path(),
+      'basePath' => $basePath,
       'baseHref' => vm_base_href(),
-      'siteUrl' => vm_site_url(),
+      'siteUrl' => $siteUrl,
       'latestItems' => $latestItems,
       'featuredItems' => $featuredItems,
       'mainItems' => $mainItems,
@@ -90,6 +128,10 @@ class Home extends CI_Controller {
         'featured' => $featured,
         'subcat_slug' => $subcatSlug,
       ],
+      'pageTitle' => $title,
+      'pageDescription' => $description,
+      'canonical' => $canonical,
+      'robots' => $robots,
     ];
 
     $this->load->view('home', $data);

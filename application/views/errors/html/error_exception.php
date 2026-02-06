@@ -1,32 +1,32 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
-?>
-
-<div style="border:1px solid #990000;padding-left:20px;margin:0 0 10px 0;">
-
-<h4>An uncaught Exception was encountered</h4>
-
-<p>Type: <?php echo get_class($exception); ?></p>
-<p>Message: <?php echo $message; ?></p>
-<p>Filename: <?php echo $exception->getFile(); ?></p>
-<p>Line Number: <?php echo $exception->getLine(); ?></p>
-
-<?php if (defined('SHOW_DEBUG_BACKTRACE') && SHOW_DEBUG_BACKTRACE === TRUE): ?>
-
-	<p>Backtrace:</p>
-	<?php foreach ($exception->getTrace() as $error): ?>
-
-		<?php if (isset($error['file']) && strpos($error['file'], realpath(BASEPATH)) !== 0): ?>
-
-			<p style="margin-left:10px">
-			File: <?php echo $error['file']; ?><br />
-			Line: <?php echo $error['line']; ?><br />
-			Function: <?php echo $error['function']; ?>
-			</p>
-		<?php endif ?>
-
-	<?php endforeach ?>
-
-<?php endif ?>
-
-</div>
+$script = $_SERVER['SCRIPT_NAME'] ?? '/';
+$dir = rtrim(str_replace('\\', '/', dirname($script)), '/');
+$home = $dir === '' ? '/' : $dir . '/';
+?><!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Errore applicazione – VideoMetro</title>
+  <style>
+    :root { --bg:#0f1115; --text:#fff; --muted:rgba(255,255,255,.72); --accent:#ff2d2d; }
+    body { margin:0; font-family: system-ui, Arial, sans-serif; background:var(--bg); color:var(--text); }
+    .wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:24px; }
+    .box { max-width:720px; }
+    .title { font-size:120px; font-weight:700; letter-spacing:2px; margin:0; line-height:1; }
+    .subtitle { margin:14px 0 22px; font-size:20px; color:var(--muted); }
+    .home { display:inline-block; padding:12px 18px; border-radius:999px; border:1px solid rgba(255,255,255,.2); color:#fff; text-decoration:none; font-weight:600; }
+    .home:hover { background: rgba(255,255,255,.08); }
+    @media (max-width: 600px) { .title { font-size:72px; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="box">
+      <div class="title">500</div>
+      <div class="subtitle">Errore applicazione</div>
+      <a class="home" href="<?php echo htmlspecialchars($home, ENT_QUOTES, 'UTF-8'); ?>">Ritorna alla home</a>
+    </div>
+  </div>
+</body>
+</html>

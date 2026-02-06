@@ -30,6 +30,12 @@ class Player extends CI_Controller {
       $video = $this->vmapi->fetch_json($url);
     }
 
+    $hasVideo = is_array($video) && !empty($video['videolUrl']);
+    if ($slug !== '' && !$hasVideo) {
+      show_404();
+      return;
+    }
+
     $siteUrl = vm_site_url();
     $basePath = vm_base_path();
     $title = $video['seo-title'] ?? $video['title'] ?? 'VideoMetro – Player';

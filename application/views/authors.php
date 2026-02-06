@@ -4,11 +4,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="I protagonisti di VideoMetro." />
-  <link rel="canonical" href="<?= htmlspecialchars($siteUrl . $basePath . '/protagonisti') ?>" />
+  <meta name="description" content="<?= htmlspecialchars($pageDescription ?? 'I protagonisti di VideoMetro.') ?>" />
+  <link rel="canonical" href="<?= htmlspecialchars($canonical ?? ($siteUrl . $basePath . '/protagonisti')) ?>" />
+  <meta name="robots" content="<?= htmlspecialchars($robots ?? 'index, follow') ?>" />
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="<?= htmlspecialchars($pageTitle ?? 'VideoMetro – Protagonisti') ?>">
+  <meta property="og:description" content="<?= htmlspecialchars($pageDescription ?? 'I protagonisti di VideoMetro.') ?>">
+  <meta property="og:url" content="<?= htmlspecialchars($canonical ?? ($siteUrl . $basePath . '/protagonisti')) ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <title>VideoMetro – Protagonisti</title>
+  <title><?= htmlspecialchars($pageTitle ?? 'VideoMetro – Protagonisti') ?></title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
     :root {

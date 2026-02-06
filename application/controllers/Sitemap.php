@@ -56,6 +56,19 @@ class Sitemap extends CI_Controller {
       if (count($data) < $limit) break;
     }
 
+    // Categories (subcategories)
+    $subcats = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_subcategory?' . http_build_query([
+      'azienda_id' => $aziendaId,
+    ])) ?? [];
+    foreach ($subcats as $s) {
+      $name = $s['sub_categoria'] ?? $s['subcategory'] ?? '';
+      $slug = $s['slug'] ?? null;
+      if (!$slug && $name) $slug = vm_slugify((string)$name);
+      if ($slug) {
+        $urls[] = $siteUrl . $basePath . '/video/categoria/' . $slug;
+      }
+    }
+
     $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     $xml .= "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
     foreach ($urls as $u) {

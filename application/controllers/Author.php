@@ -49,6 +49,11 @@ class Author extends CI_Controller {
       }
     }
 
+    if ($slug !== '' && $authorId === '') {
+      show_404();
+      return;
+    }
+
     $authorSlug = $slug !== '' ? $slug : ($authorName !== '' ? vm_slugify($authorName) : '');
 
     $authorItems = [];
@@ -67,6 +72,13 @@ class Author extends CI_Controller {
     ]));
     $categories = is_array($categoriesRaw) ? $categoriesRaw : (is_array($categoriesRaw['data'] ?? null) ? $categoriesRaw['data'] : []);
 
+    $siteUrl = vm_site_url();
+    $basePath = vm_base_path();
+    $canonical = $siteUrl . $basePath . '/protagonisti/' . ($authorSlug ?: '');
+    $title = $authorName ? ('VideoMetro – ' . $authorName) : 'VideoMetro – Autore';
+    $description = $authorName ? ('Video di ' . $authorName . ' su VideoMetro.') : "Contenuti dell'autore su VideoMetro.";
+    $robots = ($searchTerm !== '') ? 'noindex, follow' : 'index, follow';
+
     $data = [
       'aziendaId' => $aziendaId,
       'basePath' => vm_base_path(),
@@ -82,6 +94,10 @@ class Author extends CI_Controller {
       'authorItems' => $authorItems,
       'limit' => $limit,
       'categories' => $categories,
+      'pageTitle' => $title,
+      'pageDescription' => $description,
+      'canonical' => $canonical,
+      'robots' => $robots,
     ];
 
     $this->load->view('author', $data);
