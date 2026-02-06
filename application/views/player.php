@@ -100,7 +100,11 @@
     const errEl = document.getElementById('err');
     const backLink = document.getElementById('backLink');
 
+    const storedFrom = (() => {
+      try { return sessionStorage.getItem('vm:from'); } catch { return null; }
+    })();
     if (from) backLink.href = from;
+    else if (storedFrom) backLink.href = storedFrom;
     else if (document.referrer) backLink.href = document.referrer;
     const BASE_PATH = String(window.APP_CONFIG?.basePath || '').replace(/\/+$/,'');
     function baseUrl(path = '') {
@@ -173,7 +177,8 @@
         if (!text) return;
         const chip = document.createElement('a');
         chip.className = 'chip';
-        chip.href = withQuery('', `cat_id=${encodeURIComponent(c.cat_id || '')}&subcat_id=${encodeURIComponent(c.subcat_id || '')}`);
+        const chipSlug = slugify(c.subcategory || c.category || '');
+        chip.href = baseUrl(`video/categoria/${chipSlug}`);
         chip.textContent = text;
         catsEl.appendChild(chip);
       });
@@ -182,16 +187,9 @@
       (v.authors || []).forEach(a => {
         const link = document.createElement('a');
         link.className = 'author';
-        const authorId = a.id || '';
         const authorName = a.name || '';
-        const authorSlug = slugify(authorName);
-        const path = authorId ? `/protagonisti/${encodeURIComponent(authorId)}-${authorSlug}` : `/protagonisti/${authorSlug}`;
-        const qs = new URLSearchParams();
-        if (authorId) qs.set('id', String(authorId));
-        if (authorName) qs.set('name', authorName);
-        if (a.image) qs.set('image', a.image);
-        const qsStr = qs.toString();
-        link.href = qsStr ? `${path}?${qsStr}` : path;
+        const authorSlug = a.slug || slugify(authorName);
+        link.href = baseUrl(`protagonisti/${authorSlug}`);
         link.innerHTML = `${a.image ? `<img src="${a.image}" alt="">` : ''}<span>${a.name || ''}</span>`;
         authorsEl.appendChild(link);
       });

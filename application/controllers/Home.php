@@ -2,7 +2,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Home extends CI_Controller {
-  public function index() {
+  public function index($subcatSlug = null) {
     $this->load->library('vmapi');
 
     $aziendaId = (int)$this->config->item('azienda_id');
@@ -14,6 +14,23 @@ class Home extends CI_Controller {
     $catId = trim((string)$this->input->get('cat_id', true));
     $subcatId = trim((string)$this->input->get('subcat_id', true));
     $featured = trim((string)$this->input->get('featured', true));
+
+    $subcatSlug = $subcatSlug !== null ? trim((string)$subcatSlug) : '';
+
+    if ($subcatSlug !== '') {
+      $subcats = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_subcategory?' . http_build_query([
+        'azienda_id' => $aziendaId,
+      ])) ?? [];
+      foreach ($subcats as $s) {
+        $name = $s['sub_categoria'] ?? $s['subcategory'] ?? '';
+        $slug = $s['slug'] ?? vm_slugify((string)$name);
+        if ($slug === $subcatSlug) {
+          $subcatId = (string)($s['subcat_id'] ?? $s['id'] ?? '');
+          $catId = (string)($s['cat_id'] ?? $s['category_id'] ?? '');
+          break;
+        }
+      }
+    }
 
     $isHomeNoFilters = ($searchTerm === '' && $catId === '' && $subcatId === '' && $featured === '');
 
@@ -66,6 +83,13 @@ class Home extends CI_Controller {
       'limit' => $limit,
       'isHomeNoFilters' => $isHomeNoFilters,
       'categories' => $categories,
+      'filters' => [
+        'search_term' => $searchTerm,
+        'cat_id' => $catId,
+        'subcat_id' => $subcatId,
+        'featured' => $featured,
+        'subcat_slug' => $subcatSlug,
+      ],
     ];
 
     $this->load->view('home', $data);

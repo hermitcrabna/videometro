@@ -59,6 +59,7 @@ $route['protagonisti'] = 'authors';
 $route['protagonisti/(:num)(:any)'] = 'author/index/$1';
 $route['protagonisti/(:num)'] = 'author/index/$1';
 $route['protagonisti/(:any)'] = 'author/index';
+$route['video/categoria/(:any)'] = 'home/index/$1';
 $route['video/(:any)'] = 'player/index/$1';
 $route['sitemap.xml'] = 'sitemap/index';
 $route['robots.txt'] = 'robots/index';

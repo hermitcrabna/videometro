@@ -48,15 +48,7 @@ class Sitemap extends CI_Controller {
       if (count($data) === 0) break;
       foreach ($data as $a) {
         $slug = $a['slug'] ?? null;
-        $id = $a['id'] ?? ($a['author_id'] ?? null);
-        if ($id && $slug) {
-          $urls[] = $siteUrl . $basePath . '/protagonisti/' . $id . '-' . $slug;
-          continue;
-        }
-        if ($id) {
-          $urls[] = $siteUrl . $basePath . '/protagonisti/' . $id;
-          continue;
-        }
+        if (!$slug && !empty($a['name'])) $slug = vm_slugify((string)$a['name']);
         if ($slug) {
           $urls[] = $siteUrl . $basePath . '/protagonisti/' . $slug;
         }

@@ -234,12 +234,7 @@
             $authorId = is_array($author) ? ($author['id'] ?? '') : '';
             $authorSlug = strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', iconv('UTF-8','ASCII//TRANSLIT', (string)$authorName)), '-'));
             $authorPath = $authorId ? ($basePath . '/protagonisti/' . rawurlencode((string)$authorId) . '-' . $authorSlug) : ($authorSlug ? $basePath . '/protagonisti/' . $authorSlug : '');
-            $authorHref = $authorPath ? $authorPath . '?' . http_build_query(array_filter([
-              'id' => $authorId ?: null,
-              'name' => $authorName ?: null,
-              'image' => $authorImg ?: null,
-              'num_video' => $authorCount ?: null,
-            ])) : '';
+            $authorHref = $authorSlug ? ($basePath . '/protagonisti/' . $authorSlug) : '';
             $cat = is_array($v['cat'] ?? null) && !empty($v['cat']) ? $v['cat'][0] : null;
             $subcatName = is_array($cat) ? ($cat['subcategory'] ?? '') : '';
             $catId = is_array($cat) ? ($cat['cat_id'] ?? ($v['cat_id'] ?? '')) : ($v['cat_id'] ?? '');
@@ -263,7 +258,7 @@
                 <?php endif; ?>
               </div>
               <?php if ($subcatName): ?>
-                <a class="tag" href="<?= vm_h($basePath . '/?cat_id=' . urlencode((string)$catId) . '&subcat_id=' . urlencode((string)$subcatId)) ?>"><?= vm_h($subcatName) ?></a>
+                <a class="tag" href="<?= vm_h($basePath . '/video/categoria/' . vm_slugify($subcatName)) ?>"><?= vm_h($subcatName) ?></a>
               <?php endif; ?>
             </div>
           </div>
@@ -296,12 +291,7 @@
             $authorId = is_array($author) ? ($author['id'] ?? '') : '';
             $authorSlug = strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', iconv('UTF-8','ASCII//TRANSLIT', (string)$authorName)), '-'));
             $authorPath = $authorId ? ($basePath . '/protagonisti/' . rawurlencode((string)$authorId) . '-' . $authorSlug) : ($authorSlug ? $basePath . '/protagonisti/' . $authorSlug : '');
-            $authorHref = $authorPath ? $authorPath . '?' . http_build_query(array_filter([
-              'id' => $authorId ?: null,
-              'name' => $authorName ?: null,
-              'image' => $authorImg ?: null,
-              'num_video' => $authorCount ?: null,
-            ])) : '';
+            $authorHref = $authorSlug ? ($basePath . '/protagonisti/' . $authorSlug) : '';
             $cat = is_array($v['cat'] ?? null) && !empty($v['cat']) ? $v['cat'][0] : null;
             $subcatName = is_array($cat) ? ($cat['subcategory'] ?? '') : '';
             $catId = is_array($cat) ? ($cat['cat_id'] ?? ($v['cat_id'] ?? '')) : ($v['cat_id'] ?? '');
@@ -325,7 +315,7 @@
                 <?php endif; ?>
               </div>
               <?php if ($subcatName): ?>
-                <a class="tag" href="<?= vm_h($basePath . '/?cat_id=' . urlencode((string)$catId) . '&subcat_id=' . urlencode((string)$subcatId)) ?>"><?= vm_h($subcatName) ?></a>
+                <a class="tag" href="<?= vm_h($basePath . '/video/categoria/' . vm_slugify($subcatName)) ?>"><?= vm_h($subcatName) ?></a>
               <?php endif; ?>
             </div>
           </div>
@@ -354,6 +344,9 @@
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
   </script>
   <script>
+    window.__FILTERS__ = <?= json_encode($filters ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+  </script>
+  <script>
     window.APP_CONFIG = {
       aziendaId: <?= (int)$aziendaId ?>,
       siteUrl: <?= json_encode($siteUrl) ?>,
@@ -369,6 +362,7 @@
     const SITE_URL = String(window.APP_CONFIG?.siteUrl || window.location.origin).replace(/\/+$/,'');
     const SITE_BASE = SITE_URL + (BASE_PATH || '');
     const SSR = window.__SSR__ || null;
+    const FILTERS = window.__FILTERS__ || {};
     function baseUrl(path = '') {
       const clean = String(path || '').replace(/^\/+/, '');
       if (!BASE_PATH) return '/' + clean;
@@ -378,10 +372,10 @@
       const base = baseUrl(path);
       return query ? `${base}?${query}` : base;
     }
-    let searchTerm = params.get('search_term') || '';
-    const catId = params.get('cat_id') || '';
-    const subcatId = params.get('subcat_id') || '';
-    const featured = params.get('featured') || '';
+    let searchTerm = params.get('search_term') || FILTERS.search_term || '';
+    const catId = params.get('cat_id') || FILTERS.cat_id || '';
+    const subcatId = params.get('subcat_id') || FILTERS.subcat_id || '';
+    const featured = params.get('featured') || FILTERS.featured || '';
 
     let offset = 0;
     let loading = false;
@@ -762,7 +756,7 @@
           if (!name || !sid) return;
           subcatNameById.set(String(sid), String(name));
           const link = document.createElement('a');
-          link.href = withQuery('', `cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`);
+          link.href = baseUrl(`video/categoria/${slugify(name)}`);
           link.textContent = name;
           if (featured) {
             const badge = document.createElement('span');
@@ -861,7 +855,7 @@
           const featured = String(s.featured ?? '0') === '1';
           if (!name || !sid) return;
           const link = document.createElement('a');
-          link.href = withQuery('', `cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`);
+          link.href = baseUrl(`video/categoria/${slugify(name)}`);
           link.textContent = name;
           if (featured) {
             const badge = document.createElement('span');
@@ -953,15 +947,8 @@
         const authorName = author?.name ?? '';
         const authorCount = author?.num_video ?? '';
         const authorId = author?.id ?? '';
-        const authorSlug = slugify(authorName);
-        const authorPath = authorId ? baseUrl(`protagonisti/${encodeURIComponent(authorId)}-${authorSlug}`) : (authorSlug ? baseUrl(`protagonisti/${authorSlug}`) : '');
-        const authorQuery = new URLSearchParams();
-        if (authorId) authorQuery.set('id', String(authorId));
-        if (authorName) authorQuery.set('name', authorName);
-        if (authorImg) authorQuery.set('image', authorImg);
-        if (authorCount) authorQuery.set('num_video', String(authorCount));
-        const authorQueryStr = authorQuery.toString();
-        const authorHref = authorPath ? (authorQueryStr ? `${authorPath}?${authorQueryStr}` : authorPath) : '';
+        const authorSlug = author?.slug ?? slugify(authorName);
+        const authorHref = authorSlug ? baseUrl(`protagonisti/${authorSlug}`) : '';
         const cat = Array.isArray(v.cat) && v.cat.length ? v.cat[0] : null;
         const subcatName = cat?.subcategory ?? '';
         const catId = cat?.cat_id ?? v.cat_id ?? '';
@@ -984,7 +971,7 @@
               ${authorImg && authorHref ? `<a href="${authorHref}"><img src="${escapeHtml(authorImg)}" alt="" loading="lazy" decoding="async"></a>` : ''}
               ${authorName ? `<div class="author-tooltip">${escapeHtml(authorName)}${authorCount ? ` · ${escapeHtml(authorCount)} video` : ''}</div>` : ''}
             </div>
-            ${subcatName ? `<a class="tag" href="${withQuery('', `cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(subcatId)}`)}">${escapeHtml(subcatName)}</a>` : ''}
+            ${subcatName ? `<a class="tag" href="${baseUrl(`video/categoria/${slugify(subcatName)}`)}">${escapeHtml(subcatName)}</a>` : ''}
             <div class="share-wrap">
               <button class="share-btn" aria-label="Condividi">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1024,7 +1011,10 @@
           const slug = v.slug ?? '';
           const base = location.href.split('#')[0];
           const from = `${base}#scroll=${window.scrollY || 0}`;
-          if (slug) location.href = withQuery(`video/${encodeURIComponent(slug)}`, `from=${encodeURIComponent(from)}`);
+          if (slug) {
+            try { sessionStorage.setItem('vm:from', from); } catch {}
+            location.href = baseUrl(`video/${encodeURIComponent(slug)}`);
+          }
         });
         slide.addEventListener('mouseenter', () => { if (featuredTimer) clearInterval(featuredTimer); });
         slide.addEventListener('mouseleave', () => {
@@ -1218,15 +1208,8 @@
         const authorName = author?.name ?? '';
         const authorCount = author?.num_video ?? '';
         const authorId = author?.id ?? '';
-        const authorSlug = slugify(authorName);
-        const authorPath = authorId ? baseUrl(`protagonisti/${encodeURIComponent(authorId)}-${authorSlug}`) : (authorSlug ? baseUrl(`protagonisti/${authorSlug}`) : '');
-        const authorQuery = new URLSearchParams();
-        if (authorId) authorQuery.set('id', String(authorId));
-        if (authorName) authorQuery.set('name', authorName);
-        if (authorImg) authorQuery.set('image', authorImg);
-        if (authorCount) authorQuery.set('num_video', String(authorCount));
-        const authorQueryStr = authorQuery.toString();
-        const authorHref = authorPath ? (authorQueryStr ? `${authorPath}?${authorQueryStr}` : authorPath) : '';
+        const authorSlug = author?.slug ?? slugify(authorName);
+        const authorHref = authorSlug ? baseUrl(`protagonisti/${authorSlug}`) : '';
         const shareUrl = shareUrlFromSlug(v.slug ?? '');
         const cat = Array.isArray(v.cat) && v.cat.length ? v.cat[0] : null;
         const subcatName = cat?.subcategory ?? '';
@@ -1250,7 +1233,7 @@
               ${authorImg && authorHref ? `<a href="${authorHref}"><img src="${escapeHtml(authorImg)}" alt="" loading="lazy" decoding="async"></a>` : ''}
               ${authorName ? `<div class="author-tooltip">${escapeHtml(authorName)}${authorCount ? ` · ${escapeHtml(authorCount)} video` : ''}</div>` : ''}
             </div>
-            ${subcatName ? `<a class="tag" href="${withQuery('', `cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(subcatId)}`)}">${escapeHtml(subcatName)}</a>` : ''}
+            ${subcatName ? `<a class="tag" href="${baseUrl(`video/categoria/${slugify(subcatName)}`)}">${escapeHtml(subcatName)}</a>` : ''}
             <div class="share-wrap">
               <button class="share-btn" aria-label="Condividi">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1295,7 +1278,10 @@
           } catch {}
           const base = location.href.split('#')[0];
           const from = `${base}#scroll=${window.scrollY || 0}`;
-          if (slug) location.href = withQuery(`video/${encodeURIComponent(slug)}`, `from=${encodeURIComponent(from)}`);
+          if (slug) {
+            try { sessionStorage.setItem('vm:from', from); } catch {}
+            location.href = baseUrl(`video/${encodeURIComponent(slug)}`);
+          }
         });
 
         const shareBtn = card.querySelector('.share-btn');

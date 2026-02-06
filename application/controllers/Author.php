@@ -16,14 +16,40 @@ class Author extends CI_Controller {
     $authorFb = (string)$this->input->get('facebook', true);
     $authorLi = (string)$this->input->get('linkedin', true);
 
-    if ($authorId === '') {
-      $path = uri_string();
-      if (preg_match('#protagonisti/([^/]+)#', $path, $m)) {
-        if (preg_match('/^(\d+)(?:-|$)/', $m[1], $idMatch)) {
-          $authorId = $idMatch[1];
+    $slug = (string)$this->uri->segment(2);
+    if ($slug !== '') {
+      if (preg_match('/^(\d+)-(.+)$/', $slug, $m)) {
+        if ($authorId === '') $authorId = $m[1];
+        $slug = $m[2];
+      }
+    }
+
+    if ($authorId === '' && $slug !== '') {
+      $query = [
+        'azienda_id' => $aziendaId,
+        'limit' => 50,
+        'offset' => 0,
+        'search_term' => str_replace('-', ' ', $slug),
+      ];
+      $authors = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_authors?' . http_build_query($query)) ?? [];
+      foreach ($authors as $a) {
+        $aSlug = $a['slug'] ?? '';
+        if ($aSlug === '') {
+          $aSlug = vm_slugify((string)($a['name'] ?? ''));
+        }
+        if ($aSlug === $slug) {
+          $authorId = (string)($a['id'] ?? $a['author_id'] ?? '');
+          $authorName = (string)($a['name'] ?? $authorName);
+          $authorImg = (string)($a['image'] ?? $authorImg);
+          $authorCount = (string)($a['num_video'] ?? $authorCount);
+          $authorFb = (string)($a['facebook'] ?? $authorFb);
+          $authorLi = (string)($a['linkedin'] ?? $authorLi);
+          break;
         }
       }
     }
+
+    $authorSlug = $slug !== '' ? $slug : ($authorName !== '' ? vm_slugify($authorName) : '');
 
     $authorItems = [];
     if ($authorId !== '') {
@@ -52,6 +78,7 @@ class Author extends CI_Controller {
       'authorCount' => $authorCount,
       'authorFb' => $authorFb,
       'authorLi' => $authorLi,
+      'authorSlug' => $authorSlug,
       'authorItems' => $authorItems,
       'limit' => $limit,
       'categories' => $categories,

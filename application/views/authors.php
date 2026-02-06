@@ -188,17 +188,8 @@
           $fb = $a['facebook'] ?? '';
           $li = $a['linkedin'] ?? '';
           $id = $a['id'] ?? '';
-          $slug = strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', iconv('UTF-8','ASCII//TRANSLIT', (string)$name)), '-'));
-          $path = $id ? ($basePath . '/protagonisti/' . rawurlencode((string)$id) . '-' . $slug) : ($basePath . '/protagonisti/' . $slug);
-          $qs = http_build_query(array_filter([
-            'id' => $id ?: null,
-            'name' => $name ?: null,
-            'image' => $img ?: null,
-            'num_video' => $count ?: null,
-            'facebook' => $fb ?: null,
-            'linkedin' => $li ?: null,
-          ]));
-          $href = $qs ? $path . '?' . $qs : $path;
+          $slug = $a['slug'] ?? vm_slugify($name);
+          $href = $basePath . '/protagonisti/' . $slug;
         ?>
         <div class="card" onclick="location.href='<?= vm_h($href) ?>'">
           <div class="card-top">
@@ -544,7 +535,7 @@
           const featured = String(s.featured ?? '0') === '1';
           if (!name || !sid) return;
           const link = document.createElement('a');
-          link.href = withQuery('', `cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`);
+          link.href = baseUrl(`video/categoria/${slugify(name)}`);
           link.textContent = name;
           if (featured) {
             const badge = document.createElement('span');
@@ -608,7 +599,7 @@
           const featured = String(s.featured ?? '0') === '1';
           if (!name || !sid) return;
           const link = document.createElement('a');
-          link.href = withQuery('', `cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}&azienda_id=${encodeURIComponent(aziendaId)}`);
+          link.href = baseUrl(`video/categoria/${slugify(name)}`);
           link.textContent = name;
           if (featured) {
             const badge = document.createElement('span');
@@ -672,18 +663,9 @@
         `;
         card.addEventListener('click', (e) => {
           if (e.target && e.target.tagName === 'A') return;
-          const authorId = a.id ?? '';
-          const authorSlug = slugify(name);
-          const path = authorId ? baseUrl(`protagonisti/${encodeURIComponent(authorId)}-${authorSlug}`) : baseUrl(`protagonisti/${authorSlug}`);
-          const qs = new URLSearchParams();
-          if (authorId) qs.set('id', String(authorId));
-          qs.set('name', name);
-          if (img) qs.set('image', img);
-          if (count) qs.set('num_video', String(count));
-          if (fb) qs.set('facebook', fb);
-          if (li) qs.set('linkedin', li);
-          const qsStr = qs.toString();
-          location.href = qsStr ? `${path}?${qsStr}` : path;
+          const authorSlug = a.slug || slugify(name);
+          const path = baseUrl(`protagonisti/${authorSlug}`);
+          location.href = path;
         });
         frag.appendChild(card);
         authorRenderCount += 1;
