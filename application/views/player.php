@@ -31,11 +31,12 @@
     .topbar { position: sticky; top: 0; z-index: 50; background: rgba(31,39,64,0.92); border-bottom: 1px solid var(--bar-border); backdrop-filter: blur(6px); }
     .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display:flex; align-items:center; gap: 14px; }
     .spacer { flex:1; }
-    .back { color: var(--muted); text-decoration:none; font-size: 14px; }
+    .back { color: var(--muted); text-decoration:none; font-size: 14px; padding: 8px 14px; border-radius: 999px; transition: background .2s ease, color .2s ease; }
     .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; }
     .brand .dot { color: var(--accent); font-size: 1.1em; margin-left: 1px; }
     .wrap { max-width: 1200px; margin: 0 auto; padding: 18px 16px 28px; }
     .back { display:inline-block; color: var(--muted); text-decoration:none; margin-bottom:10px; }
+    .back:hover { color: #fff; background: rgba(255,255,255,.08); }
     .player { width:100%; aspect-ratio: 16/9; background:#000; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.06); }
     .audio-overlay { position:absolute; inset:0; display:grid; place-items:center; background:rgba(0,0,0,.35); }
     .audio-btn { padding:10px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.2); background:#1f2740; color:#fff; cursor:pointer; font-weight:600; }
@@ -103,9 +104,18 @@
     const storedFrom = (() => {
       try { return sessionStorage.getItem('vm:from'); } catch { return null; }
     })();
-    if (from) backLink.href = from;
-    else if (storedFrom) backLink.href = storedFrom;
-    else if (document.referrer) backLink.href = document.referrer;
+    const backTarget = from || storedFrom || document.referrer || baseUrl('');
+    if (backLink) backLink.href = backTarget;
+    if (backLink) {
+      backLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (storedFrom || from) {
+          location.href = backTarget;
+        } else {
+          history.back();
+        }
+      });
+    }
     const BASE_PATH = String(window.APP_CONFIG?.basePath || '').replace(/\/+$/,'');
     function baseUrl(path = '') {
       const clean = String(path || '').replace(/^\/+/, '');

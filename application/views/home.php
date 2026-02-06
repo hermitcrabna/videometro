@@ -101,6 +101,19 @@
     .wrap { max-width: 1200px; margin: 0 auto; padding: 18px 16px 16px; }
     .section { margin-top: 22px; }
     .section:first-of-type { margin-top: 0; }
+    .section.collapse {
+      overflow: hidden;
+      max-height: 999px;
+      opacity: 1;
+      transform: translateY(0);
+      transition: max-height .35s ease, opacity .25s ease, transform .25s ease;
+    }
+    .section.collapse.is-hidden {
+      max-height: 0;
+      opacity: 0;
+      transform: translateY(-12px);
+      pointer-events: none;
+    }
     .section-title { font-size: 18px; font-weight: 600; margin: 0 0 12px 0; }
     .featured-wrap { margin: 0; padding: 0; }
     .featured { position:relative; overflow:hidden; border-radius:16px; }
@@ -123,6 +136,7 @@
     }
     .banner { max-width: 1200px; margin: 0 auto; padding: 22px 16px 18px; }
     .banner img { width:100%; height:auto; border-radius:14px; display:block; }
+    .banner-skeleton { width:100%; height:0; padding-bottom:28%; border-radius:14px; background: linear-gradient(90deg, #2f3850 25%, #3a4563 50%, #2f3850 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; display:none; }
     .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
     .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     @media (max-width: 1100px) { .grid-4 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -180,6 +194,7 @@
     @keyframes spin { to { transform:translate(-50%, -50%) rotate(360deg); } }
     .sentinel { height: 1px; }
     .btn { padding:10px 14px; border-radius:10px; border:1px solid #333; background:#111; color:#fff; cursor:pointer; }
+
   </style>
 </head>
 <body>
@@ -239,6 +254,7 @@
     </div>
   </header>
   <div class="banner" id="banner" style="display:none;">
+    <div id="bannerSkeleton" class="banner-skeleton"></div>
     <a id="bannerLink" href="#" target="_blank" rel="noopener">
       <img id="bannerImg" alt="">
     </a>
@@ -437,6 +453,7 @@
     const banner = document.getElementById('banner');
     const bannerImg = document.getElementById('bannerImg');
     const bannerLink = document.getElementById('bannerLink');
+    const bannerSkeleton = document.getElementById('bannerSkeleton');
     const featuredSection = document.getElementById('featuredSection');
     const featuredWrap = document.getElementById('featuredWrap');
     const featuredTrack = document.getElementById('featuredTrack');
@@ -517,7 +534,7 @@
       if (targetY !== null && !Number.isNaN(targetY)) {
         pendingTargetY = targetY;
         // Se il contenuto non basta, continua a caricare
-        if (document.body.scrollHeight < targetY + 200 && !ended) {
+        if (document.body.scrollHeight < targetY + 200 && !ended && !searchTerm) {
           loadNextPage();
           return;
         }
@@ -540,10 +557,31 @@
     function isHomeNoFilters() {
       return !searchTerm && !catId && !subcatId && !featured;
     }
+    function toggleSection(section, show) {
+      if (!section) return;
+      section.classList.add('collapse');
+      if (show) {
+        section.classList.remove('is-hidden');
+        section.style.display = 'block';
+      } else {
+        section.classList.add('is-hidden');
+        // wait for transition to end before display none
+        setTimeout(() => {
+          if (section.classList.contains('is-hidden')) section.style.display = 'none';
+        }, 360);
+      }
+    }
+
+    function showBannerSkeleton(on) {
+      if (!bannerSkeleton) return;
+      bannerSkeleton.style.display = on ? 'block' : 'none';
+    }
+
     function updateHomeSectionsVisibility() {
-      const showHome = isHomeNoFilters();
-      if (latestSection) latestSection.style.display = showHome ? 'block' : 'none';
-      if (featuredSection) featuredSection.style.display = showHome ? 'block' : 'none';
+      const searching = (searchBar && searchBar.classList.contains('active')) || searchTerm.length > 0;
+      const showHome = isHomeNoFilters() && !searching;
+      toggleSection(latestSection, showHome);
+      toggleSection(featuredSection, showHome);
       if (!banner || !bannerImg || !bannerLink) return;
       const isMobile = window.matchMedia('(max-width: 900px)').matches;
       const src = isMobile && bannerMobileUrl ? bannerMobileUrl : bannerDesktopUrl;
@@ -555,6 +593,7 @@
       bannerImg.src = src;
       bannerImg.loading = 'eager';
       banner.style.display = 'block';
+      showBannerSkeleton(true);
     }
     const subcatNameById = new Map();
     function setContentTitle(text) {
@@ -584,6 +623,55 @@
         if (!searchLockActive || searchUserScrolled) return;
         window.scrollTo(0, searchLockY);
       });
+    }
+
+    function setSearchActive(active) {
+      if (!searchBar) return;
+      searchBar.classList.toggle('active', active);
+      if (navMenu) navMenu.classList.toggle('hidden', active);
+      if (active) {
+        document.body.classList.add('searching-mobile');
+        const top = (grid.getBoundingClientRect().top + window.scrollY) - 80;
+        const target = Math.max(0, top);
+        searchLockActive = true;
+        searchUserScrolled = false;
+        searchLockY = target;
+        lockSearchScroll();
+      } else {
+        document.body.classList.remove('searching-mobile');
+        searchLockActive = false;
+        searchUserScrolled = false;
+      }
+    }
+
+    function restoreSearchFromQuery() {
+      if (!searchBar || !searchInput) return;
+      const initial = (searchTerm || '').trim();
+      if (!initial) return;
+      searchInput.value = initial;
+      searchClear.classList.toggle('visible', initial.length > 0);
+      setSearchActive(true);
+    }
+
+
+    function saveSearchState() {
+      try {
+        sessionStorage.setItem('vm:searchTerm', (searchTerm || '').trim());
+        sessionStorage.setItem('vm:searchOpen', searchBar?.classList.contains('active') ? '1' : '0');
+      } catch {}
+    }
+
+    function restoreSearchState() {
+      try {
+        const t = sessionStorage.getItem('vm:searchTerm') || '';
+        const o = sessionStorage.getItem('vm:searchOpen') === '1';
+        if (t) searchTerm = t;
+        if (o || t) {
+          searchInput.value = t;
+          searchClear.classList.toggle('visible', t.length > 0);
+          setSearchActive(true);
+        }
+      } catch {}
     }
 
     function escapeHtml(s) {
@@ -634,9 +722,17 @@
         return;
       }
       bannerLink.href = bannerWebsiteUrl || '#';
+      showBannerSkeleton(true);
       bannerImg.src = src;
       bannerImg.loading = 'eager';
       banner.style.display = 'block';
+    }
+
+    if (bannerImg) {
+      bannerImg.addEventListener('load', () => {
+        setTimeout(() => showBannerSkeleton(false), 200);
+      });
+      bannerImg.addEventListener('error', () => showBannerSkeleton(false));
     }
 
     function normalizeAzienda(data) {
@@ -1038,6 +1134,7 @@
           const from = `${base}#scroll=${window.scrollY || 0}`;
           if (slug) {
             try { sessionStorage.setItem('vm:from', from); } catch {}
+            saveSearchState();
             location.href = baseUrl(`video/${encodeURIComponent(slug)}`);
           }
         });
@@ -1305,6 +1402,7 @@
           const from = `${base}#scroll=${window.scrollY || 0}`;
           if (slug) {
             try { sessionStorage.setItem('vm:from', from); } catch {}
+            saveSearchState();
             location.href = baseUrl(`video/${encodeURIComponent(slug)}`);
           }
         });
@@ -1386,6 +1484,58 @@
       return null;
     }
 
+    function setPager(visible, page = 1, hasNext = false) {
+      if (!pager) return;
+      pager.style.display = visible ? 'flex' : 'none';
+      if (pagerInfo) pagerInfo.textContent = visible ? `Pagina ${page}` : '';
+      if (pagerPrev) pagerPrev.disabled = page <= 1;
+      if (pagerNext) pagerNext.disabled = !hasNext;
+    }
+
+    async function loadPage(page) {
+      if (loading) return;
+      loading = true;
+      showError(false);
+      showLoading(false);
+      clearInfo();
+      showSkeletons(true, Math.min(12, limit));
+      try {
+        const qs = new URLSearchParams();
+        if (aziendaId) qs.set('azienda_id', String(aziendaId));
+        if (limit) qs.set('limit', String(limit));
+        qs.set('page', String(page));
+        if (searchTerm) qs.set('search_term', searchTerm);
+        if (catId) qs.set('cat_id', catId);
+        if (subcatId) qs.set('subcat_id', subcatId);
+        if (featured) qs.set('featured', featured);
+        else qs.set('featured', '0');
+
+        const url = `${baseUrl('api/videos.php')}?${qs.toString()}`;
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        let json = null;
+        if (!res.ok) {
+          try { json = await res.json(); } catch {}
+          const detail = json?.error || json?.detail || `HTTP ${res.status}`;
+          throw new Error(detail);
+        }
+        json = await res.json();
+        const items = extractItems(json);
+        if (!items) throw new Error('Risposta non valida: array di video non trovato');
+        grid.innerHTML = '';
+        renderItems(items, grid, { skipFeatured: true, skipLatest: isHomeNoFilters(), dimGrid: true, withInlineBanners: true });
+        const hasNext = items.length >= limit;
+        currentPage = page;
+        setPager(true, currentPage, hasNext);
+      } catch (e) {
+        console.error(e);
+        showError(true, e?.message || 'Errore di caricamento.');
+      } finally {
+        showSkeletons(false);
+        loading = false;
+      }
+    }
+
+
     async function loadNextPage() {
       if (loading || ended) return;
 
@@ -1439,7 +1589,7 @@
         showSkeletons(false);
 
         // Se dopo il render la pagina è ancora corta, continua a caricare
-        ensureFillViewport();
+        if (!searchTerm) ensureFillViewport();
       } catch (e) {
         console.error(e);
         showLoading(false);
@@ -1469,12 +1619,13 @@
 
     // Fallback: se la pagina è corta, carica subito altre pagine
     function ensureFillViewport() {
-      if (ended || loading) return;
+      if (ended || loading || searchTerm) return;
       const short = document.body.offsetHeight < window.innerHeight + 200;
       if (short) loadNextPage();
     }
 
     retryBtn.addEventListener('click', () => loadNextPage());
+
 
     let searchDebounce = null;
     function handleSearchInput(value) {
@@ -1496,7 +1647,12 @@
         lockSearchScroll();
         return;
       }
-      resetAndLoad();
+      // comportamento come protagonisti: reset, scroll top, carica e poi infinite su scroll
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      offset = 0;
+      ended = false;
+      grid.innerHTML = '';
+      loadNextPage();
       lockSearchScroll();
     }
 
@@ -1506,6 +1662,7 @@
       searchInput.value = '';
       searchTerm = '';
       searchClear.classList.remove('visible');
+      
       clearInfo();
       document.body.classList.remove('searching-mobile');
       loadSubcatLabel();
@@ -1522,13 +1679,12 @@
       if (active) {
         searchInput.focus();
         document.body.classList.add('searching-mobile');
-        const top = (grid.getBoundingClientRect().top + window.scrollY) - 80;
-        const target = Math.max(0, top);
-        window.scrollTo({ top: target, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         searchLockActive = true;
         searchUserScrolled = false;
-        searchLockY = target;
+        searchLockY = 0;
         lockSearchScroll();
+        updateHomeSectionsVisibility();
       } else {
         searchInput.value = '';
         searchTerm = '';
@@ -1545,6 +1701,7 @@
         searchLockActive = false;
         searchUserScrolled = false;
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        updateHomeSectionsVisibility();
       }
     });
 
@@ -1577,7 +1734,7 @@
     });
 
     // prima pagina
-    updateHomeSectionsVisibility();
+      updateHomeSectionsVisibility();
     loadSubcatLabel();
     if (isHomeNoFilters()) {
       const latestApplied = applyLatestSSR();
