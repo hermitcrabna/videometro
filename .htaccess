@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Se il sito e' in sottocartella, imposta RewriteBase (es: /videometro/)
+  RewriteBase /videometro/
+
+  # Skip existing files/directories
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Front controller
+  RewriteRule ^ index.php [L]
+</IfModule>
