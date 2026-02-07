@@ -25,10 +25,10 @@
       --accent: #ff2d2d;
       --badge-url: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ff2d2d" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M9 13v8l3-2 3 2v-8"/></svg>');
     }
-    body { margin:0; font-family: system-ui, Arial; background:var(--bg); color:var(--text); }
+    body { min-height:100vh; display:flex; flex-direction:column; margin:0; font-family: system-ui, Arial; background:var(--bg); color:var(--text); }
     .topbar { position: sticky; top: 0; z-index: 50; background: rgba(31,39,64,0.92); border-bottom: 1px solid var(--bar-border); backdrop-filter: blur(6px); }
-    .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display:flex; align-items:center; gap: 14px; position: relative; }
-    .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; position: relative; }
+    .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display:flex; align-items:center; gap: 14px; position: relative; transform: translateY(-3px); }
+    .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; position: relative; transform: translateY(-3px); }
     .brand .dot { color: var(--accent); font-size: 1.1em; }
     .brand-text { display:inline-flex; align-items:center; }
     .brand-skeleton { width: min(160px, 40vw); height: 24px; border-radius: 999px; background: linear-gradient(90deg, #2f3850 25%, #3a4563 50%, #2f3850 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; display:none; position:absolute; left:0; top:50%; transform: translateY(-50%); pointer-events:none; }
@@ -73,8 +73,7 @@
       .hamburger { display:grid; }
       .hide-mobile { display:none; }
     }
-
-    .wrap { max-width: 1200px; margin: 0 auto; padding: 22px 16px 40px; }
+    .wrap { flex:1; width:100%; max-width: 1200px; margin: 0 auto; padding: 0 16px 28px; box-sizing: border-box; }
     .hero { display:flex; align-items:center; justify-content:space-between; gap: 18px; }
     .hero h1 { font-size: 42px; margin:0; letter-spacing: .2px; }
     .hero p { margin:6px 0 0 0; opacity:.8; }
@@ -89,6 +88,14 @@
     .close { position:absolute; top:20px; right:20px; width:42px; height:42px; border-radius:999px; border:1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color:#fff; display:grid; place-items:center; cursor:pointer; }
     @media (max-width: 1100px) { .gallery { column-count: 2; } }
     @media (max-width: 700px) { .gallery { column-count: 1; } }
+    
+    .site-footer { margin-top: 46px; padding: 28px 16px 40px; background: #0d1018; border-top: 1px solid rgba(255,255,255,.06); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display:grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+    .footer-brand { font-weight: 700; font-size: 22px; letter-spacing: .2px; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; }
+    .footer-brand .dot { color: var(--accent); font-size: 1.05em; margin-left: 1px; }
+    .footer-col { color: rgba(255,255,255,.82); line-height: 1.6; font-size: 14px; }
+    .footer-col a { color:#fff; font-weight:700; text-decoration:none; }
+    @media (max-width: 900px) { .footer-inner { grid-template-columns: 1fr; } }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   </style>
 </head>
@@ -204,6 +211,10 @@
     const mobileToggle = document.getElementById('mobileToggle');
     const brandLogo = document.getElementById('brandLogo');
     const brandText = document.getElementById('brandText');
+    const siteFooter = document.getElementById('siteFooter');
+    const footerLogo = document.getElementById('footerLogo');
+    const footerLeft = document.getElementById('footerLeft');
+    const footerRight = document.getElementById('footerRight');
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightboxImg');
     const lightboxClose = document.getElementById('lightboxClose');
@@ -253,6 +264,27 @@
       const vals = Object.values(data);
       return vals && vals.length ? vals[0] : null;
     }
+    
+    
+    
+    function renderFooter(a) {
+      const siteFooterEl = document.getElementById('siteFooter');
+      const footerLogoEl = document.getElementById('footerLogo');
+      const footerLeftEl = document.getElementById('footerLeft');
+      const footerRightEl = document.getElementById('footerRight');
+      if (!siteFooterEl || !footerLeftEl || !footerRightEl) {
+        setTimeout(() => renderFooter(a), 0);
+        return;
+      }
+      const left = (a && a.footer_left) ? String(a.footer_left).trim() : '';
+      const right = (a && a.footer_right) ? String(a.footer_right).trim() : '';
+      if (!left && !right) { siteFooterEl.style.display = 'none'; return; }
+      footerLeftEl.innerHTML = left;
+      footerRightEl.innerHTML = right;
+      if (footerLogoEl && brandText) footerLogoEl.innerHTML = brandText.innerHTML;
+      siteFooterEl.style.display = 'block';
+    }
+
     async function loadAzienda() {
       if (brandLogo) brandLogo.classList.add('loading');
       try {
@@ -268,6 +300,7 @@
         }
         setBrandName(item.name || item.url || '');
         setAccent(item.color_point || '');
+        renderFooter(item);
       } catch (e) {
         console.error(e);
         if (brandLogo) brandLogo.classList.remove('loading');
@@ -370,5 +403,16 @@
     loadAzienda();
     bindMegaMenu();
   </script>
+
+  <footer class="site-footer" id="siteFooter" style="display:none;">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <div class="footer-brand" id="footerLogo">videometro<span class="dot">.</span>tv</div>
+        <div id="footerLeft"></div>
+      </div>
+      <div class="footer-col" id="footerRight"></div>
+    </div>
+  </footer>
+
 </body>
 </html>

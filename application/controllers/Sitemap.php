@@ -15,9 +15,16 @@ class Sitemap extends CI_Controller {
     if ($basePath !== '') $videoPrefix = $basePath . $videoPrefix;
 
     $urls = [];
-    $urls[] = $siteUrl . ($basePath === '' ? '/' : $basePath . '/');
-    $urls[] = $siteUrl . $basePath . '/protagonisti';
-    $urls[] = $siteUrl . $basePath . '/blog';
+    $seen = [];
+    $pushUrl = function($url) use (&$urls, &$seen) {
+      if (!$url) return;
+      if (isset($seen[$url])) return;
+      $seen[$url] = true;
+      $urls[] = $url;
+    };
+    $pushUrl($siteUrl . ($basePath === '' ? '/' : $basePath . '/'));
+    $pushUrl($siteUrl . $basePath . '/protagonisti');
+    $pushUrl($siteUrl . $basePath . '/blog');
 
     // Videos
     $limit = 50;
@@ -32,7 +39,50 @@ class Sitemap extends CI_Controller {
       if (count($data) === 0) break;
       foreach ($data as $v) {
         $slug = $v['slug'] ?? null;
-        if ($slug) $urls[] = $siteUrl . $videoPrefix . $slug;
+        if ($slug) $pushUrl($siteUrl . $videoPrefix . $slug);
+      }
+      if (count($data) < $limit) break;
+    }
+
+    // Blog + Gallery (blog=1)
+    for ($i = 0; $i < 2000; $i++) {
+      $data = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_video?' . http_build_query([
+        'azienda_id' => $aziendaId,
+        'limit' => $limit,
+        'offset' => $i * $limit,
+        'blog' => 1,
+      ])) ?? [];
+      if (count($data) === 0) break;
+      foreach ($data as $v) {
+        $isGallery = (int)($v['gallery'] ?? 0) === 1;
+        $slug = $v['slug_post'] ?? $v['slug'] ?? $v['seo_slug'] ?? null;
+        $id = $v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? null;
+        if ($isGallery) {
+          $g = $id ? (string)$id : (string)$slug;
+          if ($g !== '') $pushUrl($siteUrl . $basePath . '/gallery/' . rawurlencode($g));
+        } else {
+          $b = $slug ?: $id;
+          if ($b) $pushUrl($siteUrl . $basePath . '/blog/' . rawurlencode((string)$b));
+        }
+      }
+      if (count($data) < $limit) break;
+    }
+
+    // Gallery only (gallery=1, blog=0)
+    for ($i = 0; $i < 2000; $i++) {
+      $data = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_video?' . http_build_query([
+        'azienda_id' => $aziendaId,
+        'limit' => $limit,
+        'offset' => $i * $limit,
+        'gallery' => 1,
+        'blog' => 0,
+      ])) ?? [];
+      if (count($data) === 0) break;
+      foreach ($data as $v) {
+        $slug = $v['slug_post'] ?? $v['slug'] ?? $v['seo_slug'] ?? null;
+        $id = $v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? null;
+        $g = $id ? (string)$id : (string)$slug;
+        if ($g !== '') $pushUrl($siteUrl . $basePath . '/gallery/' . rawurlencode($g));
       }
       if (count($data) < $limit) break;
     }
@@ -50,7 +100,7 @@ class Sitemap extends CI_Controller {
         $slug = $a['slug'] ?? null;
         if (!$slug && !empty($a['name'])) $slug = vm_slugify((string)$a['name']);
         if ($slug) {
-          $urls[] = $siteUrl . $basePath . '/protagonisti/' . $slug;
+          $pushUrl($siteUrl . $basePath . '/protagonisti/' . $slug);
         }
       }
       if (count($data) < $limit) break;
@@ -65,7 +115,7 @@ class Sitemap extends CI_Controller {
       $slug = $s['slug'] ?? null;
       if (!$slug && $name) $slug = vm_slugify((string)$name);
       if ($slug) {
-        $urls[] = $siteUrl . $basePath . '/video/categoria/' . $slug;
+        $pushUrl($siteUrl . $basePath . '/video/categoria/' . $slug);
       }
     }
 

@@ -27,19 +27,27 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
     :root { --bg:#0f1115; --bar:#1f2740; --bar-border:#2b3554; --text:#fff; --muted:rgba(255,255,255,.72); --accent:<?= htmlspecialchars($aziendaColor) ?>; }
-    body { margin:0; font-family: system-ui, Arial; background:var(--bg); color:var(--text); }
+    body { min-height:100vh; display:flex; flex-direction:column; margin:0; font-family: system-ui, Arial; background:var(--bg); color:var(--text); }
     .topbar { position: sticky; top: 0; z-index: 50; background: rgba(31,39,64,0.92); border-bottom: 1px solid var(--bar-border); backdrop-filter: blur(6px); }
     .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display:flex; align-items:center; gap: 14px; }
     .spacer { flex:1; }
     .back { color: var(--muted); text-decoration:none; font-size: 14px; padding: 8px 14px; border-radius: 999px; transition: background .2s ease, color .2s ease; }
-    .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; position: relative; }
+    .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; position: relative; transform: translateY(-3px); }
     .brand .dot { color: var(--accent); font-size: 1.1em; margin-left: 1px; }
     .brand-text { display:inline-flex; align-items:center; }
     .brand-skeleton { width: min(160px, 40vw); height: 24px; border-radius: 999px; background: linear-gradient(90deg, #2f3850 25%, #3a4563 50%, #2f3850 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; display:none; position:absolute; left:0; top:50%; transform: translateY(-50%); pointer-events:none; }
     .brand.loading .brand-text { opacity: 0; }
     .brand.loading .brand-skeleton { display:inline-block; }
+    
+    .site-footer { margin-top: 46px; padding: 28px 16px 40px; background: #0d1018; border-top: 1px solid rgba(255,255,255,.06); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display:grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+    .footer-brand { font-weight: 700; font-size: 22px; letter-spacing: .2px; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; }
+    .footer-brand .dot { color: var(--accent); font-size: 1.05em; margin-left: 1px; }
+    .footer-col { color: rgba(255,255,255,.82); line-height: 1.6; font-size: 14px; }
+    .footer-col a { color:#fff; font-weight:700; text-decoration:none; }
+    @media (max-width: 900px) { .footer-inner { grid-template-columns: 1fr; } }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .wrap { max-width: 1200px; margin: 0 auto; padding: 18px 16px 28px; }
+    .wrap { flex:1; width:100%; max-width: 1200px; margin: 0 auto; padding: 0 16px 28px; box-sizing: border-box; }
     .back { display:inline-block; color: var(--muted); text-decoration:none; margin-bottom:10px; }
     .back:hover { color: #fff; background: rgba(255,255,255,.08); }
     .player { width:100%; aspect-ratio: 16/9; background: rgba(31,39,64,0.92); border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.06); position:relative; }
@@ -124,6 +132,10 @@
     const backLink = document.getElementById('backLink');
     const brandLogo = document.getElementById('brandLogo');
     const brandText = document.getElementById('brandText');
+    const siteFooter = document.getElementById('siteFooter');
+    const footerLogo = document.getElementById('footerLogo');
+    const footerLeft = document.getElementById('footerLeft');
+    const footerRight = document.getElementById('footerRight');
 
     const storedFrom = (() => {
       try { return sessionStorage.getItem('vm:from'); } catch { return null; }
@@ -502,6 +514,27 @@
       }
     }
 
+    
+    
+    
+    function renderFooter(a) {
+      const siteFooterEl = document.getElementById('siteFooter');
+      const footerLogoEl = document.getElementById('footerLogo');
+      const footerLeftEl = document.getElementById('footerLeft');
+      const footerRightEl = document.getElementById('footerRight');
+      if (!siteFooterEl || !footerLeftEl || !footerRightEl) {
+        setTimeout(() => renderFooter(a), 0);
+        return;
+      }
+      const left = (a && a.footer_left) ? String(a.footer_left).trim() : '';
+      const right = (a && a.footer_right) ? String(a.footer_right).trim() : '';
+      if (!left && !right) { siteFooterEl.style.display = 'none'; return; }
+      footerLeftEl.innerHTML = left;
+      footerRightEl.innerHTML = right;
+      if (footerLogoEl && brandText) footerLogoEl.innerHTML = brandText.innerHTML;
+      siteFooterEl.style.display = 'block';
+    }
+
     async function loadAzienda() {
       if (brandLogo) brandLogo.classList.add('loading');
       try {
@@ -545,5 +578,16 @@
 
     load();
   </script>
+
+  <footer class="site-footer" id="siteFooter" style="display:none;">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <div class="footer-brand" id="footerLogo">videometro<span class="dot">.</span>tv</div>
+        <div id="footerLeft"></div>
+      </div>
+      <div class="footer-col" id="footerRight"></div>
+    </div>
+  </footer>
+
 </body>
 </html>

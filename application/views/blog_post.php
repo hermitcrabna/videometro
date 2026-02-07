@@ -25,10 +25,10 @@
       --accent: #ff2d2d;
       --badge-url: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ff2d2d" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M9 13v8l3-2 3 2v-8"/></svg>');
     }
-    body { margin:0; font-family: system-ui, Arial; background:var(--bg); color:var(--text); }
+    body { min-height:100vh; display:flex; flex-direction:column; margin:0; font-family: system-ui, Arial; background:var(--bg); color:var(--text); }
     .topbar { position: sticky; top: 0; z-index: 50; background: rgba(31,39,64,0.92); border-bottom: 1px solid var(--bar-border); backdrop-filter: blur(6px); }
-    .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display:flex; align-items:center; gap: 14px; position: relative; }
-    .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; position: relative; }
+    .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display:flex; align-items:center; gap: 14px; position: relative; transform: translateY(-3px); }
+    .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; position: relative; transform: translateY(-3px); }
     .brand .dot { color: var(--accent); font-size: 1.1em; }
     .brand-text { display:inline-flex; align-items:center; }
     .brand-skeleton { width: min(160px, 40vw); height: 24px; border-radius: 999px; background: linear-gradient(90deg, #2f3850 25%, #3a4563 50%, #2f3850 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; display:none; position:absolute; left:0; top:50%; transform: translateY(-50%); pointer-events:none; }
@@ -72,34 +72,31 @@
       .hamburger { display:grid; }
       .hide-mobile { display:none; }
     }
-
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 22px 16px 40px; }
+    .wrap { flex:1; width:100%; max-width: 1200px; margin: 0 auto; padding: 0 16px 28px; box-sizing: border-box; }
     .hero { display:grid; grid-template-columns: 1.1fr 1fr; gap: 20px; align-items: stretch; }
     .hero-media { border-radius:18px; overflow:hidden; border:1px solid rgba(255,255,255,.08); background: #1a2034; }
     .hero-media img { width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition: opacity .5s ease; }
     .hero-media img.is-loaded { opacity:1; }
-    .hero-body { display:flex; flex-direction:column; gap: 14px; padding: 6px 4px; }
+    .hero-body { min-height:100vh; display:flex; flex-direction:column; display:flex; flex-direction:column; gap: 14px; padding: 6px 4px; }
     .eyebrow { display:inline-flex; align-items:center; gap:8px; font-size: 12px; color: var(--muted); letter-spacing:.3px; text-transform: uppercase; }
     .title { font-size: 34px; line-height: 1.1; margin: 0; font-weight: 700; }
     .summary { font-size: 15px; opacity:.82; margin: 0; }
-    .meta { display:flex; flex-wrap:wrap; gap:10px; margin-top: 4px; }
+    .summary a { color: #fff; font-weight: 700; }
+    .meta { display:flex; flex-wrap:wrap; gap:10px; margin-top: 4px; align-items:center; }
+    .author-chip { display:inline-flex; align-items:center; gap:8px; padding:4px 10px; border-radius:999px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:#fff; text-decoration:none; font-size:12px; }
+    .author-chip img { width:22px; height:22px; border-radius:999px; object-fit:cover; }
     .chip { background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:#fff; padding:4px 10px; border-radius:999px; font-size:12px; text-decoration:none; }
-    .content { margin-top: 26px; display:grid; grid-template-columns: 1fr 320px; gap: 22px; }
-    .article { background: rgba(26,32,52,.7); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding: 18px 20px; }
-    .article h2, .article h3, .article h4 { margin-top: 1.2em; }
-    .article p { line-height: 1.7; font-size: 15px; opacity:.9; }
-    .aside { display:flex; flex-direction:column; gap: 14px; }
-    .card { background: rgba(26,32,52,.7); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding: 16px; }
-    .card h3 { margin: 0 0 10px 0; font-size: 15px; }
-    .kv { display:grid; grid-template-columns: 1fr; gap: 10px; font-size: 13px; color: var(--muted); }
-    .kv span { color:#fff; font-weight:600; }
-    details { margin-top: 8px; }
-    details summary { cursor:pointer; color: var(--muted); }
-    pre { white-space: pre-wrap; word-wrap: break-word; background: #101626; border-radius: 12px; padding: 12px; border:1px solid rgba(255,255,255,.08); font-size: 12px; color:#d8e1ff; }
     @media (max-width: 980px) {
       .hero { grid-template-columns: 1fr; }
-      .content { grid-template-columns: 1fr; }
     }
+    
+    .site-footer { margin-top: 46px; padding: 28px 16px 40px; background: #0d1018; border-top: 1px solid rgba(255,255,255,.06); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display:grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+    .footer-brand { font-weight: 700; font-size: 22px; letter-spacing: .2px; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; }
+    .footer-brand .dot { color: var(--accent); font-size: 1.05em; margin-left: 1px; }
+    .footer-col { color: rgba(255,255,255,.82); line-height: 1.6; font-size: 14px; }
+    .footer-col a { color:#fff; font-weight:700; text-decoration:none; }
+    @media (max-width: 900px) { .footer-inner { grid-template-columns: 1fr; } }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   </style>
 </head>
@@ -165,8 +162,18 @@
       $cat = $post['subcategory'];
     }
     $tags = $post['tags'] ?? $post['tag'] ?? [];
+    $summaryTrim = trim((string)$summary);
+    $summaryHasHtml = $summaryTrim !== strip_tags($summaryTrim);
     $contentTrim = trim((string)$content);
     $hasHtml = $contentTrim !== strip_tags($contentTrim);
+    $primaryAuthor = is_array($authors) && !empty($authors) ? $authors[0] : null;
+    $authorName = is_array($primaryAuthor) ? (string)($primaryAuthor['name'] ?? '') : '';
+    $authorImage = is_array($primaryAuthor) ? (string)($primaryAuthor['image'] ?? '') : '';
+    $authorSlug = is_array($primaryAuthor) ? (string)($primaryAuthor['slug'] ?? '') : '';
+    if (!$authorSlug && $authorName !== '') {
+      $authorSlug = strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', iconv('UTF-8','ASCII//TRANSLIT', $authorName)), '-'));
+    }
+    $authorHref = $authorSlug ? ($basePath . '/protagonisti/' . $authorSlug) : '';
   ?>
 
   <main class="wrap">
@@ -177,12 +184,22 @@
         <?php endif; ?>
       </div>
       <div class="hero-body">
-        <div class="eyebrow"><span class="badge"></span> Blog</div>
         <h1 class="title"><?= vm_h($title) ?></h1>
-        <?php if ($summary): ?><p class="summary"><?= vm_h($summary) ?></p><?php endif; ?>
+        <?php if ($summaryTrim): ?>
+          <?php if ($summaryHasHtml): ?>
+            <div class="summary"><?= $summaryTrim ?></div>
+          <?php else: ?>
+            <p class="summary"><?= vm_h($summaryTrim) ?></p>
+          <?php endif; ?>
+        <?php endif; ?>
         <div class="meta">
           <?php if ($date): ?><span class="chip"><?= vm_h($date) ?></span><?php endif; ?>
-          <?php if ($cat): ?><a class="chip" href="<?= htmlspecialchars($basePath . '/video/categoria/' . vm_slugify((string)$cat)) ?>"><?= vm_h($cat) ?></a><?php endif; ?>
+          <?php if ($authorName && $authorHref): ?>
+            <a class="author-chip" href="<?= htmlspecialchars($authorHref) ?>">
+              <?php if ($authorImage): ?><img src="<?= vm_h($authorImage) ?>" alt=""><?php endif; ?>
+              <span><?= vm_h($authorName) ?></span>
+            </a>
+          <?php endif; ?>
           <?php if (is_array($tags)): ?>
             <?php foreach ($tags as $t): ?>
               <?php if ($t): ?><span class="chip"><?= vm_h($t) ?></span><?php endif; ?>
@@ -192,42 +209,6 @@
       </div>
     </section>
 
-    <section class="content">
-      <article class="article">
-        <?php if ($contentTrim): ?>
-          <?php if ($hasHtml): ?>
-            <?= $contentTrim ?>
-          <?php else: ?>
-            <p><?= nl2br(vm_h($contentTrim)) ?></p>
-          <?php endif; ?>
-        <?php else: ?>
-          <p><?= $summary ? vm_h($summary) : 'Contenuto non disponibile.' ?></p>
-        <?php endif; ?>
-      </article>
-      <aside class="aside">
-        <div class="card">
-          <h3>Dettagli</h3>
-          <div class="kv">
-            <?php if ($date): ?><div><span>Data</span><br><?= vm_h($date) ?></div><?php endif; ?>
-            <?php if (!empty($authors) && is_array($authors)): ?>
-              <?php foreach ($authors as $a): ?>
-                <?php if (!empty($a['name'])): ?>
-                  <div><span>Autore</span><br><?= vm_h($a['name']) ?></div>
-                <?php endif; ?>
-              <?php endforeach; ?>
-            <?php endif; ?>
-            <?php if (!empty($post['slug'])): ?><div><span>Slug</span><br><?= vm_h($post['slug']) ?></div><?php endif; ?>
-          </div>
-        </div>
-        <div class="card">
-          <h3>Dati completi</h3>
-          <details>
-            <summary>Mostra JSON API</summary>
-            <pre><?= vm_h(json_encode($post, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?></pre>
-          </details>
-        </div>
-      </aside>
-    </section>
   </main>
 
   <script>
@@ -262,6 +243,10 @@
     const mobileToggle = document.getElementById('mobileToggle');
     const brandLogo = document.getElementById('brandLogo');
     const brandText = document.getElementById('brandText');
+    const siteFooter = document.getElementById('siteFooter');
+    const footerLogo = document.getElementById('footerLogo');
+    const footerLeft = document.getElementById('footerLeft');
+    const footerRight = document.getElementById('footerRight');
     const heroImg = document.getElementById('heroImg');
 
     function escapeHtml(s) {
@@ -309,6 +294,27 @@
       const vals = Object.values(data);
       return vals && vals.length ? vals[0] : null;
     }
+    
+    
+    
+    function renderFooter(a) {
+      const siteFooterEl = document.getElementById('siteFooter');
+      const footerLogoEl = document.getElementById('footerLogo');
+      const footerLeftEl = document.getElementById('footerLeft');
+      const footerRightEl = document.getElementById('footerRight');
+      if (!siteFooterEl || !footerLeftEl || !footerRightEl) {
+        setTimeout(() => renderFooter(a), 0);
+        return;
+      }
+      const left = (a && a.footer_left) ? String(a.footer_left).trim() : '';
+      const right = (a && a.footer_right) ? String(a.footer_right).trim() : '';
+      if (!left && !right) { siteFooterEl.style.display = 'none'; return; }
+      footerLeftEl.innerHTML = left;
+      footerRightEl.innerHTML = right;
+      if (footerLogoEl && brandText) footerLogoEl.innerHTML = brandText.innerHTML;
+      siteFooterEl.style.display = 'block';
+    }
+
     async function loadAzienda() {
       if (brandLogo) brandLogo.classList.add('loading');
       try {
@@ -324,6 +330,7 @@
         }
         setBrandName(item.name || item.url || '');
         setAccent(item.color_point || '');
+        renderFooter(item);
       } catch (e) {
         console.error(e);
         if (brandLogo) brandLogo.classList.remove('loading');
@@ -419,5 +426,16 @@
     loadAzienda();
     bindMegaMenu();
   </script>
+
+  <footer class="site-footer" id="siteFooter" style="display:none;">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <div class="footer-brand" id="footerLogo">videometro<span class="dot">.</span>tv</div>
+        <div id="footerLeft"></div>
+      </div>
+      <div class="footer-col" id="footerRight"></div>
+    </div>
+  </footer>
+
 </body>
 </html>

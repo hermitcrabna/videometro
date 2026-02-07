@@ -30,6 +30,10 @@ class Blog_post extends CI_Controller {
     $video = null;
     if (ctype_digit((string)$slug)) {
       $video = $this->fetchVideoById((string)$slug);
+      if (is_array($video) && !empty($video['slug'])) {
+        redirect('blog/' . $video['slug'], 'location', 301);
+        return;
+      }
     }
     if (!is_array($video) || empty($video)) {
       $video = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_video_by_slug/' . rawurlencode($slug));
@@ -51,7 +55,7 @@ class Blog_post extends CI_Controller {
       redirect('gallery/' . $slug, 'location', 302);
       return;
     }
-    if (!$isBlog) {
+    if (!$isBlog && ctype_digit((string)$slug)) {
       redirect('video/' . $slug, 'location', 302);
       return;
     }

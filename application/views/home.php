@@ -46,10 +46,10 @@
       --accent: #ff2d2d;
       --badge-url: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ff2d2d" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M9 13v8l3-2 3 2v-8"/></svg>');
     }
-    body { margin:0; font-family: system-ui, Arial; background:var(--bg); color:var(--text); }
+    body { min-height:100vh; display:flex; flex-direction:column; margin:0; font-family: system-ui, Arial; background:var(--bg); color:var(--text); }
     .topbar { position: sticky; top: 0; z-index: 50; background: rgba(31,39,64,0.92); border-bottom: 1px solid var(--bar-border); backdrop-filter: blur(6px); }
-    .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display:flex; align-items:center; gap: 14px; position: relative; }
-    .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; position: relative; }
+    .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display:flex; align-items:center; gap: 14px; position: relative; transform: translateY(-3px); }
+    .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; position: relative; transform: translateY(-3px); }
     .brand .dot { color: var(--accent); font-size: 1.1em; }
     .brand-text { display:inline-flex; align-items:center; }
     .brand-skeleton { width: min(160px, 40vw); height: 24px; border-radius: 999px; background: linear-gradient(90deg, #2f3850 25%, #3a4563 50%, #2f3850 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; display:none; position:absolute; left:0; top:50%; transform: translateY(-50%); pointer-events:none; }
@@ -73,6 +73,18 @@
     .spacer { flex: 1; }
     .icon-btn { width: 36px; height: 36px; border-radius: 999px; border: none; background: transparent; color: #fff; display:grid; place-items:center; cursor:pointer; }
     .icon-btn svg { width: 18px; height: 18px; }
+    .social-sep { width:1px; height:20px; background: rgba(255,255,255,.2); border-radius: 999px; display:none; }
+    .socials { display:flex; align-items:center; gap:8px; }
+    .socials a { width: 32px; height: 32px; border-radius: 100%; border:1px solid rgba(255,255,255,.12); display:grid; place-items:center; color:#fff; text-decoration:none; background: rgba(255,255,255,.04); }
+    .socials a:hover { background: rgba(255,255,255,.1); }
+    .socials svg { width:16px; height:16px; display:block; }
+    .site-footer { margin-top: 46px; padding: 28px 16px 40px; background: #0d1018; border-top: 1px solid rgba(255,255,255,.06); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display:grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+    .footer-brand { font-weight: 700; font-size: 22px; letter-spacing: .2px; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; }
+    .footer-brand .dot { color: var(--accent); font-size: 1.05em; margin-left: 1px; }
+    .footer-col { color: rgba(255,255,255,.82); line-height: 1.6; font-size: 14px; }
+    .footer-col a { color:#fff; font-weight:700; text-decoration:none; }
+    @media (max-width: 900px) { .footer-inner { grid-template-columns: 1fr; } }
     .hamburger { width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #fff; display:none; place-items:center; cursor:pointer; }
     .hamburger span { width: 18px; height: 2px; background: currentColor; display:block; position: relative; }
     .hamburger span::before, .hamburger span::after { content:""; position:absolute; left:0; width: 18px; height: 2px; background: currentColor; }
@@ -105,7 +117,7 @@
     .clear-btn svg { width: 16px; height: 16px; }
     #navDynamic { display: contents; }
     .nav.hidden { display:none; }
-    .wrap { max-width: 1200px; margin: 0 auto; padding: 18px 16px 16px; }
+    .wrap { flex:1; width:100%; max-width: 1200px; margin: 0 auto; padding: 0 16px 28px; box-sizing: border-box; }
     .section { margin-top: 22px; }
     .section:first-of-type { margin-top: 0; }
     .section.collapse {
@@ -145,17 +157,18 @@
     .banner { max-width: 1200px; margin: 0 auto; padding: 22px 16px 18px; }
     .banner img { width:100%; height:auto; border-radius:14px; display:block; opacity:0; transition: opacity .35s ease; }
     .banner img.is-loaded { opacity:1; }
-    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; min-width: 0;  min-width: 0; box-sizing: border-box; }
     .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     @media (max-width: 1100px) { .grid-4 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     @media (max-width: 900px) { .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 600px) { .grid-4 { grid-template-columns: 1fr; } }
+    @media (max-width: 520px) { .grid { grid-template-columns: 1fr; } }
     .inline-banner { grid-column: 1 / -1; }
     .inline-banner img { width:100%; height:auto; border-radius:14px; display:block; opacity:0; transition: opacity .35s ease; }
     .inline-banner img.is-loaded { opacity:1; }
     .grid.dim .card { opacity: .35; transition: opacity .2s ease; }
     .grid.dim .card.show-desc { opacity: 1; }
-    .card { background:#303a52; border-radius:14px; overflow:hidden; cursor:pointer; border: 1px solid rgba(255,255,255,.06); transition: background .2s ease, border-color .2s ease; position: relative; }
+    .card { background:#303a52; border-radius:14px; overflow:hidden; cursor:pointer; border: 1px solid rgba(255,255,255,.06); transition: background .2s ease, border-color .2s ease; position: relative; box-sizing: border-box;  box-sizing: border-box; }
     .card:hover { background: color-mix(in srgb, var(--accent) 65%, #303a52); border-color: color-mix(in srgb, var(--accent) 70%, rgba(255,255,255,.06)); }
     .tag { background: rgba(15,17,21,.6); color:#fff; font-size:11px; padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.15); text-decoration:none; transition: background .2s ease; }
     .tag:hover { background: var(--accent); }
@@ -192,7 +205,7 @@
     .skeletons { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:14px; }
     .s-card { background:#2a334a; border-radius:14px; border:1px solid rgba(255,255,255,.06); overflow:hidden; position:relative; display:flex; flex-direction:column; }
     .s-thumb { aspect-ratio:16/9; background: linear-gradient(90deg, #2f3850 25%, #3a4563 50%, #2f3850 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; }
-    .s-body { padding:12px 14px 10px; display:flex; flex-direction:column; gap:10px; }
+    .s-body { min-height:100vh; display:flex; flex-direction:column; padding:12px 14px 10px; display:flex; flex-direction:column; gap:10px; }
     .s-line { height:10px; border-radius:6px; background: #3a4563; }
     .s-line.w1 { width:70%; }
     .s-line.w2 { width:50%; }
@@ -246,6 +259,8 @@
           <path d="M20 20l-3.5-3.5"></path>
         </svg>
       </button>
+      <span class="social-sep" id="socialSep"></span>
+      <div class="socials" id="socials"></div>
     </div>
     <div class="mobile-nav" id="mobileNav">
       <a href="<?= htmlspecialchars($basePath . '/protagonisti') ?>">Protagonisti</a>
@@ -292,8 +307,19 @@
             $subcatName = is_array($cat) ? ($cat['subcategory'] ?? '') : '';
             $catId = is_array($cat) ? ($cat['cat_id'] ?? ($v['cat_id'] ?? '')) : ($v['cat_id'] ?? '');
             $subcatId = is_array($cat) ? ($cat['subcat_id'] ?? ($v['subcat_id'] ?? '')) : ($v['subcat_id'] ?? '');
+            $isGallery = (string)($v['gallery'] ?? '0') === '1';
+            $isBlog = (string)($v['blog'] ?? '0') === '1' || !empty($v['slug_post']);
+            $slug = $v['slug_post'] ?? $v['slug'] ?? $v['seo_slug'] ?? '';
+            $id = $v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? '';
+            if ($isGallery) {
+              $path = $id ? ('gallery/' . rawurlencode((string)$id)) : ($slug ? ('gallery/' . rawurlencode((string)$slug)) : '');
+            } elseif ($isBlog) {
+              $path = $id ? ('blog/' . rawurlencode((string)$id)) : ($slug ? ('blog/' . rawurlencode((string)$slug)) : '');
+            } else {
+              $path = $slug ? ('video/' . rawurlencode((string)$slug)) : ($id ? ('video/' . rawurlencode((string)$id)) : '');
+            }
           ?>
-          <div class="card">
+          <div class="card" data-slug="<?= vm_h($slug) ?>" data-id="<?= vm_h($id) ?>" data-blog="<?= vm_h($v['blog'] ?? '0') ?>" data-gallery="<?= vm_h($v['gallery'] ?? '0') ?>" data-path="<?= vm_h($path) ?>">
             <div class="thumb-wrap">
               <img class="thumb" src="<?= vm_h($thumb) ?>" alt="" loading="lazy" decoding="async">
             </div>
@@ -349,8 +375,19 @@
             $subcatName = is_array($cat) ? ($cat['subcategory'] ?? '') : '';
             $catId = is_array($cat) ? ($cat['cat_id'] ?? ($v['cat_id'] ?? '')) : ($v['cat_id'] ?? '');
             $subcatId = is_array($cat) ? ($cat['subcat_id'] ?? ($v['subcat_id'] ?? '')) : ($v['subcat_id'] ?? '');
+            $isGallery = (string)($v['gallery'] ?? '0') === '1';
+            $isBlog = (string)($v['blog'] ?? '0') === '1' || !empty($v['slug_post']);
+            $slug = $v['slug_post'] ?? $v['slug'] ?? $v['seo_slug'] ?? '';
+            $id = $v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? '';
+            if ($isGallery) {
+              $path = $id ? ('gallery/' . rawurlencode((string)$id)) : ($slug ? ('gallery/' . rawurlencode((string)$slug)) : '');
+            } elseif ($isBlog) {
+              $path = $id ? ('blog/' . rawurlencode((string)$id)) : ($slug ? ('blog/' . rawurlencode((string)$slug)) : '');
+            } else {
+              $path = $slug ? ('video/' . rawurlencode((string)$slug)) : ($id ? ('video/' . rawurlencode((string)$id)) : '');
+            }
           ?>
-          <div class="card">
+          <div class="card" data-slug="<?= vm_h($slug) ?>" data-id="<?= vm_h($id) ?>" data-blog="<?= vm_h($v['blog'] ?? '0') ?>" data-gallery="<?= vm_h($v['gallery'] ?? '0') ?>" data-path="<?= vm_h($path) ?>">
             <div class="thumb-wrap">
               <img class="thumb" src="<?= vm_h($thumb) ?>" alt="" loading="lazy" decoding="async">
             </div>
@@ -385,6 +422,16 @@
       <div id="sentinel" class="sentinel"></div>
     </section>
   </div>
+
+  <footer class="site-footer" id="siteFooter" style="display:none;">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <div class="footer-brand" id="footerLogo">videometro<span class="dot">.</span>tv</div>
+        <div id="footerLeft"></div>
+      </div>
+      <div class="footer-col" id="footerRight"></div>
+    </div>
+  </footer>
 
   <script>
     window.__SSR__ = <?= json_encode([
@@ -471,6 +518,12 @@
     const brandLogo = document.getElementById('brandLogo');
     const contentTitle = document.getElementById('contentTitle');
     const brandText = document.getElementById('brandText');
+    const siteFooter = document.getElementById('siteFooter');
+    const footerLogo = document.getElementById('footerLogo');
+    const footerLeft = document.getElementById('footerLeft');
+    const footerRight = document.getElementById('footerRight');
+    const socialsEl = document.getElementById('socials');
+    const socialSep = document.getElementById('socialSep');
     const banner = document.getElementById('banner');
     const bannerImg = document.getElementById('bannerImg');
     const bannerLink = document.getElementById('bannerLink');
@@ -806,6 +859,52 @@
       }
     }
 
+    function renderSocials(a) {
+      if (!socialsEl || !socialSep) return;
+      socialsEl.innerHTML = '';
+      const links = [
+        { key: 'facebook', label: 'Facebook', svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 22v-9h3l1-4h-4V7a2 2 0 0 1 2-2h2V2h-3a5 5 0 0 0-5 5v3H7v4h3v9z"></path></svg>` },
+        { key: 'instagram', label: 'Instagram', svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17" cy="7" r="1"></circle></svg>` },
+        { key: 'youtube', label: 'YouTube', svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.5 12 4.5 12 4.5s-5.7 0-7.5.6a3 3 0 0 0-2.1 2.1A31.7 31.7 0 0 0 2.4 12a31.7 31.7 0 0 0 .6 4.8 3 3 0 0 0 2.1 2.1c1.8.6 7.5.6 7.5.6s5.7 0 7.5-.6a3 3 0 0 0 2.1-2.1A31.7 31.7 0 0 0 21.6 12a31.7 31.7 0 0 0 0-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"></path></svg>` },
+        { key: 'linkedin', label: 'LinkedIn', svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-1 6h2v12H3zM9 9h2v2a4 4 0 0 1 4-2c3 0 5 2 5 6v6h-2v-6c0-2-1-4-3-4s-3 2-3 4v6H9z"></path></svg>` },
+      ];
+      let added = 0;
+      links.forEach(item => {
+        const href = (a && a[item.key]) ? String(a[item.key]).trim() : '';
+        if (!href) return;
+        const link = document.createElement('a');
+        link.href = href;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.setAttribute('aria-label', item.label);
+        link.innerHTML = item.svg;
+        socialsEl.appendChild(link);
+        added += 1;
+      });
+      socialSep.style.display = added ? 'inline-block' : 'none';
+    }
+
+    
+    
+    
+    function renderFooter(a) {
+      const siteFooterEl = document.getElementById('siteFooter');
+      const footerLogoEl = document.getElementById('footerLogo');
+      const footerLeftEl = document.getElementById('footerLeft');
+      const footerRightEl = document.getElementById('footerRight');
+      if (!siteFooterEl || !footerLeftEl || !footerRightEl) {
+        setTimeout(() => renderFooter(a), 0);
+        return;
+      }
+      const left = (a && a.footer_left) ? String(a.footer_left).trim() : '';
+      const right = (a && a.footer_right) ? String(a.footer_right).trim() : '';
+      if (!left && !right) { siteFooterEl.style.display = 'none'; return; }
+      footerLeftEl.innerHTML = left;
+      footerRightEl.innerHTML = right;
+      if (footerLogoEl && brandText) footerLogoEl.innerHTML = brandText.innerHTML;
+      siteFooterEl.style.display = 'block';
+    }
+
     async function loadAzienda() {
       if (brandLogo) brandLogo.classList.add('loading');
       try {
@@ -823,7 +922,9 @@
         setAccent(item.color_point || '');
         bannerWebsiteUrl = item.website || item.url || '';
         setBanner(item.banner || '', item.banner_mobile || '');
+        renderFooter(item);
         window.addEventListener('resize', () => setBanner(item.banner || '', item.banner_mobile || ''));
+        renderSocials(item);
       } catch (e) {
         console.error(e);
         if (brandLogo) brandLogo.classList.remove('loading');
@@ -1078,7 +1179,7 @@
     const ICON_GALLERY = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.5"></circle><path d="M21 15l-5-5-6 6-3-3-4 4"></path></svg>`;
 
     function contentTypeIcons(v) {
-      const isBlog = toFlag(v?.blog);
+      const isBlog = toFlag(v?.blog) || Boolean(v?.slug_post);
       const isGallery = toFlag(v?.gallery);
       if (isBlog || isGallery) {
         return [
@@ -1106,17 +1207,48 @@
       return slug;
     }
     function contentPathFromItem(v) {
-      const slug = normalizeSlug(v?.slug ?? v?.url ?? v?.link ?? '');
+      const slug = normalizeSlug(v?.slug_post ?? v?.slug ?? v?.seo_slug ?? v?.url ?? v?.link ?? '');
       const isGallery = toFlag(v?.gallery);
-      const isBlog = toFlag(v?.blog);
+      const isBlog = toFlag(v?.blog) || Boolean(v?.slug_post);
       const id = v?.post_id ?? v?.id ?? v?.video_id ?? '';
       if (isGallery && id) return `gallery/${encodeURIComponent(String(id))}`;
       if (isGallery && slug) return `gallery/${slug}`;
-      if (isBlog && slug) return `blog/${slug}`;
       if (isBlog && id) return `blog/${encodeURIComponent(String(id))}`;
+      if (isBlog && slug) return `blog/${slug}`;
       if (slug) return `video/${slug}`;
       if (id) return `video/${encodeURIComponent(String(id))}`;
       return '';
+    }
+    function itemFromCard(card) {
+      return {
+        slug: card?.dataset?.slug || '',
+        post_id: card?.dataset?.id || '',
+        blog: card?.dataset?.blog || '0',
+        gallery: card?.dataset?.gallery || '0',
+        path: card?.dataset?.path || '',
+      };
+    }
+    function bindCardNavigation(root) {
+      if (!root) return;
+      root.querySelectorAll('.card').forEach(card => {
+        if (card.dataset.navBound === '1') return;
+        card.dataset.navBound = '1';
+        card.addEventListener('click', (e) => {
+          if (e.target && e.target.closest('a')) return;
+          if (e.target && e.target.closest('button')) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const data = itemFromCard(card);
+          const basePath = data.path || contentPathFromItem(data);
+          const path = basePath || contentPathFromItem(data);
+          if (!path) return;
+          const base = location.href.split('#')[0];
+          const from = `${base}#scroll=${window.scrollY || 0}`;
+          try { sessionStorage.setItem('vm:from', from); } catch {}
+          saveSearchState();
+          location.href = baseUrl(path);
+        });
+      });
     }
     function shareUrlFromItem(v) {
       const path = contentPathFromItem(v);
@@ -1327,6 +1459,7 @@
         }
         latestSection.style.display = 'block';
         renderItems(items, latestGrid, { skipFeatured: false, skipLatest: false, dimGrid: false });
+        bindCardNavigation(latestGrid);
         showLatestSkeletons(false);
       } catch (e) {
         console.error(e);
@@ -1351,6 +1484,7 @@
       latestSection.style.display = 'block';
       latestGrid.innerHTML = '';
       renderItems(latestItems, latestGrid, { skipFeatured: false, skipLatest: false, dimGrid: false });
+      bindCardNavigation(latestGrid);
       showLatestSkeletons(false);
       return true;
     }
@@ -1555,6 +1689,7 @@
       if (!SSR?.items || !Array.isArray(SSR.items)) return false;
       grid.innerHTML = '';
       renderItems(SSR.items, grid, { skipFeatured: true, skipLatest: isHomeNoFilters(), dimGrid: true, withInlineBanners: true });
+      bindCardNavigation(grid);
       offset = typeof SSR.offset === 'number' ? SSR.offset : (isHomeNoFilters() ? (latestItems.length || 0) : 0);
       ended = SSR.items.length < (SSR.limit || limit);
       showSkeletons(false);
