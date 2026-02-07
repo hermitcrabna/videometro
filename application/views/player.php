@@ -32,8 +32,13 @@
     .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display:flex; align-items:center; gap: 14px; }
     .spacer { flex:1; }
     .back { color: var(--muted); text-decoration:none; font-size: 14px; padding: 8px 14px; border-radius: 999px; transition: background .2s ease, color .2s ease; }
-    .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; }
+    .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; }
     .brand .dot { color: var(--accent); font-size: 1.1em; margin-left: 1px; }
+    .brand-text { display:inline-flex; align-items:center; }
+    .brand-skeleton { width: min(160px, 40vw); height: 24px; border-radius: 999px; background: linear-gradient(90deg, #2f3850 25%, #3a4563 50%, #2f3850 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; display:none; }
+    .brand.loading .brand-text { opacity: 0; visibility: hidden; }
+    .brand.loading .brand-skeleton { display:inline-block; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     .wrap { max-width: 1200px; margin: 0 auto; padding: 18px 16px 28px; }
     .back { display:inline-block; color: var(--muted); text-decoration:none; margin-bottom:10px; }
     .back:hover { color: #fff; background: rgba(255,255,255,.08); }
@@ -65,7 +70,10 @@
           $brandHtml = htmlspecialchars($aziendaName) . '<span class="dot">.</span>';
         }
       ?>
-      <a class="brand" id="brandLogo" href="<?= htmlspecialchars($baseHref) ?>"><?= $brandHtml ?></a>
+      <a class="brand loading" id="brandLogo" href="<?= htmlspecialchars($baseHref) ?>">
+        <span class="brand-skeleton" id="brandSkeleton"></span>
+        <span class="brand-text" id="brandText"><?= $brandHtml ?></span>
+      </a>
       <div class="spacer"></div>
       <a class="back" id="backLink" href="<?= htmlspecialchars($baseHref) ?>">← Ritorna ai video</a>
     </div>
@@ -100,6 +108,8 @@
     const authorsEl = document.getElementById('authors');
     const errEl = document.getElementById('err');
     const backLink = document.getElementById('backLink');
+    const brandLogo = document.getElementById('brandLogo');
+    const brandText = document.getElementById('brandText');
 
     const storedFrom = (() => {
       try { return sessionStorage.getItem('vm:from'); } catch { return null; }
@@ -228,6 +238,7 @@
     }
 
     async function loadAzienda() {
+      if (brandLogo) brandLogo.classList.add('loading');
       try {
         const res = await fetch(`${baseUrl('api/azienda.php')}?azienda_id=${encodeURIComponent(String(aziendaId))}`, {
           headers: { 'Accept': 'application/json' },
@@ -242,10 +253,10 @@
         }
         const name = (a.name || '').trim();
         if (name) {
-          const brand = document.getElementById('brandLogo');
-          if (brand) brand.innerHTML = renderLogo(name);
+          if (brandText) brandText.innerHTML = renderLogo(name);
         }
       } catch {}
+      if (brandLogo) brandLogo.classList.remove('loading');
     }
 
     function renderLogo(name) {

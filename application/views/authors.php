@@ -30,8 +30,12 @@
     body { margin:0; font-family: system-ui, Arial; background:var(--bg); color:var(--text); }
     .topbar { position: sticky; top: 0; z-index: 50; background: rgba(31,39,64,0.92); border-bottom: 1px solid var(--bar-border); backdrop-filter: blur(6px); }
     .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display:flex; align-items:center; gap: 14px; position: relative; }
-    .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; }
+    .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; }
     .brand .dot { color: var(--accent); font-size: 1.1em; }
+    .brand-text { display:inline-flex; align-items:center; }
+    .brand-skeleton { width: min(160px, 40vw); height: 24px; border-radius: 999px; background: linear-gradient(90deg, #2f3850 25%, #3a4563 50%, #2f3850 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; display:none; }
+    .brand.loading .brand-text { opacity: 0; visibility: hidden; }
+    .brand.loading .brand-skeleton { display:inline-block; }
     .nav { display:flex; align-items:center; gap: 16px; color: var(--muted); font-size: 14px; font-family: 'Montserrat', system-ui, Arial, sans-serif; letter-spacing: .2px; }
     .nav a, .nav span, .nav button { color: inherit; text-decoration: none; cursor: pointer; padding: 8px 14px; border-radius: 999px; display:inline-block; transition: background .2s ease, color .2s ease; background: transparent; border: none; font: inherit; }
     .nav a .caret, .nav span.caret { padding: 0; border-radius: 0; background: transparent; }
@@ -119,7 +123,10 @@
       <button class="hamburger" id="mobileToggle" aria-label="Menu">
         <span></span>
       </button>
-      <a class="brand" id="brandLogo" href="<?= htmlspecialchars($baseHref) ?>">videometro.tv</a>
+      <a class="brand loading" id="brandLogo" href="<?= htmlspecialchars($baseHref) ?>">
+        <span class="brand-skeleton" id="brandSkeleton"></span>
+        <span class="brand-text" id="brandText">videometro.tv</span>
+      </a>
       <nav class="nav" id="navMenu">
         <a href="<?= htmlspecialchars($basePath . '/protagonisti') ?>">Protagonisti</a>
         <a href="<?= htmlspecialchars($basePath . '/blog') ?>" id="navBlog" style="display:none;">Blog</a>
@@ -276,6 +283,7 @@
     const mobileNav = document.getElementById('mobileNav');
     const mobileNavDynamic = document.getElementById('mobileNavDynamic');
     const brandLogo = document.getElementById('brandLogo');
+    const brandText = document.getElementById('brandText');
     const banner = document.getElementById('banner');
     const bannerImg = document.getElementById('bannerImg');
     const bannerLink = document.getElementById('bannerLink');
@@ -372,14 +380,19 @@
     }
 
     function setBrandName(name) {
-      if (!name) return;
+      if (!brandLogo || !brandText) return;
+      if (!name) {
+        brandLogo.classList.remove('loading');
+        return;
+      }
       const safe = name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const idx = safe.lastIndexOf('.');
       if (idx !== -1) {
-        brandLogo.innerHTML = `${safe.slice(0, idx)}<span class="dot">.</span>${safe.slice(idx + 1)}`;
+        brandText.innerHTML = `${safe.slice(0, idx)}<span class="dot">.</span>${safe.slice(idx + 1)}`;
       } else {
-        brandLogo.textContent = name;
+        brandText.textContent = name;
       }
+      brandLogo.classList.remove('loading');
     }
     function setBanner(bannerUrl, bannerMobileUrl) {
       if (!banner || !bannerImg || !bannerLink) return;
@@ -444,6 +457,7 @@
     }
 
     async function loadAzienda() {
+      if (brandLogo) brandLogo.classList.add('loading');
       try {
         const res = await fetch(`${baseUrl('api/azienda.php')}?azienda_id=${encodeURIComponent(aziendaId)}`, {
           headers: { 'Accept': 'application/json' },
@@ -451,7 +465,10 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const item = normalizeAzienda(data?.data ?? data);
-        if (!item) return;
+        if (!item) {
+          if (brandLogo) brandLogo.classList.remove('loading');
+          return;
+        }
         setBrandName(item.name || item.url || '');
         setAccent(item.color_point || '');
         bannerWebsiteUrl = item.website || item.url || '';
@@ -459,6 +476,7 @@
         window.addEventListener('resize', () => setBanner(item.banner || '', item.banner_mobile || ''));
       } catch (e) {
         console.error(e);
+        if (brandLogo) brandLogo.classList.remove('loading');
       }
     }
 
