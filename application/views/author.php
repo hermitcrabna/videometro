@@ -66,8 +66,8 @@
     .brand-skeleton { width: min(160px, 40vw); height: 24px; border-radius: 999px; background: linear-gradient(90deg, #2f3850 25%, #3a4563 50%, #2f3850 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; display:none; position:absolute; left:0; top:50%; transform: translateY(-50%); pointer-events:none; }
     .brand.loading .brand-text { opacity: 0; }
     .brand.loading .brand-skeleton { display:inline-block; }
-    .nav { display:flex; align-items:center; gap: 16px; color: var(--muted); font-size: 14px; font-family: 'Montserrat', system-ui, Arial, sans-serif; letter-spacing: .2px; }
-    .nav a, .nav span, .nav button { color: inherit; text-decoration: none; cursor: pointer; padding: 8px 14px; border-radius: 999px; display:inline-block; transition: background .2s ease, color .2s ease; background: transparent; border: none; font: inherit; }
+    .nav { display:flex; align-items:center; gap: 10px; color: var(--muted); font-size: 14px; font-family: 'Montserrat', system-ui, Arial, sans-serif; letter-spacing: .2px; }
+    .nav a, .nav span, .nav button { color: inherit; text-decoration: none; cursor: pointer; padding: 8px 12px; border-radius: 999px; display:inline-block; transition: background .2s ease, color .2s ease; background: transparent; border: none; font: inherit; }
     .nav a .caret, .nav span.caret { padding: 0; border-radius: 0; background: transparent; }
     .nav a .caret:hover, .nav span.caret:hover { background: transparent; }
     .nav a:hover, .nav span:hover, .nav button:hover { color: #fff; background: rgba(255,255,255,.08); }
@@ -79,7 +79,8 @@
     .mega-skeletons { display:flex; flex-wrap:wrap; gap:10px 12px; }
     .mega-pill { width:120px; height:28px; border-radius:999px; background: linear-gradient(90deg, #2f3850 25%, #3a4563 50%, #2f3850 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; }
     .badge { width: 14px; height: 18px; flex: 0 0 auto; font-size: 0; border: none; color: transparent; background: no-repeat center/contain; background-image: var(--badge-url); }
-    .caret { display:inline-block; margin-left: 6px; font-size: 16px; transform: translateY(-1px); }
+    .caret { display:inline-block; margin-left: 6px; width: 8px; height: 8px; position: relative; font-size: 0; line-height: 0; transform: translateY(-1px); }
+    .caret::before { content:""; position:absolute; inset:0; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); }
     .spacer { flex: 1; }
     .icon-btn { width: 36px; height: 36px; border-radius: 999px; border: none; background: transparent; color: #fff; display:grid; place-items:center; cursor:pointer; }
     .icon-btn svg { width: 18px; height: 18px; }
@@ -194,7 +195,7 @@
               $id = $c['cat_id'] ?? $c['id'] ?? '';
               if (!$name || !$id) continue;
             ?>
-            <button type="button" class="nav-cat" data-cat-id="<?= vm_h($id) ?>"><?= vm_h($name) ?> <span class="caret">▾</span></button>
+            <button type="button" class="nav-cat" data-cat-id="<?= vm_h($id) ?>"><?= vm_h($name) ?> <span class="caret"></span></button>
           <?php endforeach; ?>
         </span>
       </nav>
@@ -222,7 +223,7 @@
             $id = $c['cat_id'] ?? $c['id'] ?? '';
             if (!$name || !$id) continue;
           ?>
-          <button type="button" class="mobile-cat" data-cat-id="<?= vm_h($id) ?>"><?= vm_h($name) ?> <span class="caret">▾</span></button>
+          <button type="button" class="mobile-cat" data-cat-id="<?= vm_h($id) ?>"><?= vm_h($name) ?> <span class="caret"></span></button>
           <div class="mobile-sub"></div>
         <?php endforeach; ?>
       </div>
@@ -670,7 +671,7 @@
           btn.textContent = name + ' ';
           const caret = document.createElement('span');
           caret.className = 'caret';
-          caret.textContent = '▾';
+          caret.textContent = '';
           btn.appendChild(caret);
           navDynamic.appendChild(btn);
 
@@ -681,7 +682,7 @@
           btnMobile.textContent = name;
           const caretMobile = document.createElement('span');
           caretMobile.className = 'caret';
-          caretMobile.textContent = '▾';
+          caretMobile.textContent = '';
           btnMobile.appendChild(caretMobile);
           const subWrap = document.createElement('div');
           subWrap.className = 'mobile-sub';
