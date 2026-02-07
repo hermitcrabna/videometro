@@ -55,6 +55,8 @@ $route['translate_uri_dashes'] = FALSE;
 
 // SSR pages
 $route['blog'] = 'blog';
+$route['blog/(:any)'] = 'blog_post/index/$1';
+$route['gallery/(:any)'] = 'gallery/index/$1';
 $route['protagonisti'] = 'authors';
 $route['protagonisti/(:num)(:any)'] = 'author/index/$1';
 $route['protagonisti/(:num)'] = 'author/index/$1';

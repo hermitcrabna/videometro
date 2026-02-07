@@ -45,6 +45,8 @@
     .player { width:100%; aspect-ratio: 16/9; background: rgba(31,39,64,0.92); border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.06); position:relative; }
     .vm-embed { position:absolute; inset:0; }
     .vm-embed iframe { width:100%; height:100%; display:block; }
+    .player.is-youtube { overflow: hidden; }
+    .player.is-youtube #vmEmbed { position:absolute; left:50%; top:50%; width:100% !important; height:100% !important; transform: translate(-50%, -50%); }
     .vm-controls { position:absolute; left:10px; right:10px; bottom:10px; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; background: linear-gradient(180deg, rgba(15,17,21,0.2), rgba(15,17,21,0.75)); border:1px solid rgba(255,255,255,.08); backdrop-filter: blur(8px); }
     .vm-btn { width:34px; height:34px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color:#fff; display:grid; place-items:center; cursor:pointer; }
     .vm-btn svg { width:18px; height:18px; display:block; }
@@ -189,6 +191,7 @@
         player.innerHTML = '';
         return;
       }
+      player.classList.toggle('is-youtube', v.type === 'youtube');
       player.innerHTML = `
         <div class="vm-embed" id="vmEmbed"></div>
         <button class="vm-btn vm-unmute" id="vmUnmute" aria-label="Attiva audio">

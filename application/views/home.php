@@ -411,15 +411,23 @@
     const params = new URLSearchParams(location.search);
     const aziendaId = parseInt(window.APP_CONFIG?.aziendaId || '1', 10);
     const limit = parseInt(params.get('limit') || '12', 10);
-    const BASE_PATH = String(window.APP_CONFIG?.basePath || '').replace(/\/+$/,'');
+    function normalizeBasePath(p) {
+      const parts = String(p || '').split('/').filter(Boolean);
+      if (parts.length >= 2 && parts[0] === parts[1]) parts.splice(1, 1);
+      return parts.length ? '/' + parts.join('/') : '';
+    }
+    const BASE_PATH = normalizeBasePath(String(window.APP_CONFIG?.basePath || '').replace(/\/+$/,''));
     const SITE_URL = String(window.APP_CONFIG?.siteUrl || window.location.origin).replace(/\/+$/,'');
     const SITE_BASE = SITE_URL + (BASE_PATH || '');
     const SSR = window.__SSR__ || null;
     const FILTERS = window.__FILTERS__ || {};
     function baseUrl(path = '') {
       const clean = String(path || '').replace(/^\/+/, '');
-      if (!BASE_PATH) return '/' + clean;
-      return clean ? `${BASE_PATH}/${clean}` : BASE_PATH || '/';
+      const baseSeg = BASE_PATH.replace(/^\/+/, '');
+      const baseRoot = window.location.origin + (BASE_PATH || '');
+      if (!clean) return baseRoot || '/';
+      if (baseSeg && (clean === baseSeg || clean.startsWith(baseSeg + '/'))) return window.location.origin + '/' + clean;
+      return `${baseRoot}/${clean}`;
     }
     function withQuery(path, query) {
       const base = baseUrl(path);
@@ -1081,9 +1089,38 @@
       return typeIcon('video', 'Video', ICON_VIDEO);
     }
 
-    function shareUrlFromSlug(slug) {
+    function toFlag(val) {
+      const n = parseInt(String(val ?? '0').trim(), 10);
+      return Number.isFinite(n) && n === 1;
+    }
+    function normalizeSlug(raw) {
+      let slug = String(raw ?? '').trim();
       if (!slug) return '';
-      return `${SITE_BASE}/video/${slug}`;
+      slug = slug.replace(/^https?:\/\/[^/]+/i, '');
+      slug = slug.replace(/^[\/]+/, '');
+      const baseSeg = BASE_PATH.replace(/^\/+/, '');
+      while (baseSeg && slug.startsWith(baseSeg + '/')) {
+        slug = slug.slice(baseSeg.length + 1);
+      }
+      slug = slug.replace(/^(video|blog|gallery)\//, '');
+      return slug;
+    }
+    function contentPathFromItem(v) {
+      const slug = normalizeSlug(v?.slug ?? v?.url ?? v?.link ?? '');
+      const isGallery = toFlag(v?.gallery);
+      const isBlog = toFlag(v?.blog);
+      const id = v?.post_id ?? v?.id ?? v?.video_id ?? '';
+      if (isGallery && id) return `gallery/${encodeURIComponent(String(id))}`;
+      if (isGallery && slug) return `gallery/${slug}`;
+      if (isBlog && slug) return `blog/${slug}`;
+      if (isBlog && id) return `blog/${encodeURIComponent(String(id))}`;
+      if (slug) return `video/${slug}`;
+      if (id) return `video/${encodeURIComponent(String(id))}`;
+      return '';
+    }
+    function shareUrlFromItem(v) {
+      const path = contentPathFromItem(v);
+      return path ? `${SITE_BASE}/${path}` : '';
     }
 
     const latestCount = 8;
@@ -1120,7 +1157,7 @@
         const subcatName = cat?.subcategory ?? '';
         const catId = cat?.cat_id ?? v.cat_id ?? '';
         const subcatId = cat?.subcat_id ?? v.subcat_id ?? '';
-        const shareUrl = shareUrlFromSlug(v.slug ?? '');
+        const shareUrl = shareUrlFromItem(v);
         const slide = document.createElement('div');
         slide.className = 'f-slide';
         const typeIcons = contentTypeIcons(v);
@@ -1175,13 +1212,13 @@
           </div>
         `;
         slide.addEventListener('click', () => {
-          const slug = v.slug ?? '';
+          const path = contentPathFromItem(v);
           const base = location.href.split('#')[0];
           const from = `${base}#scroll=${window.scrollY || 0}`;
-          if (slug) {
+          if (path) {
             try { sessionStorage.setItem('vm:from', from); } catch {}
             saveSearchState();
-            location.href = baseUrl(`video/${encodeURIComponent(slug)}`);
+            location.href = baseUrl(path);
           }
         });
         slide.addEventListener('mouseenter', () => { if (featuredTimer) clearInterval(featuredTimer); });
@@ -1335,7 +1372,7 @@
     function updateVideoSchema(items) {
       items.forEach((v) => {
         const slug = v.slug ?? '';
-        const url = shareUrlFromSlug(slug);
+        const url = shareUrlFromItem(v);
         if (!url) return;
         schemaItems.push({
           '@type': 'ListItem',
@@ -1379,7 +1416,7 @@
         const authorId = author?.id ?? '';
         const authorSlug = author?.slug ?? slugify(authorName);
         const authorHref = authorSlug ? baseUrl(`protagonisti/${authorSlug}`) : '';
-        const shareUrl = shareUrlFromSlug(v.slug ?? '');
+        const shareUrl = shareUrlFromItem(v);
         const cat = Array.isArray(v.cat) && v.cat.length ? v.cat[0] : null;
         const subcatName = cat?.subcategory ?? '';
         const catId = cat?.cat_id ?? v.cat_id ?? '';
@@ -1440,17 +1477,17 @@
         `;
 
         card.addEventListener('click', () => {
-          const slug = v.slug ?? '';
+          const path = contentPathFromItem(v);
           try {
             sessionStorage.setItem(`scroll:${location.pathname}`, String(window.scrollY || 0));
             sessionStorage.setItem(`scroll:pending:${location.pathname}`, '1');
           } catch {}
           const base = location.href.split('#')[0];
           const from = `${base}#scroll=${window.scrollY || 0}`;
-          if (slug) {
+          if (path) {
             try { sessionStorage.setItem('vm:from', from); } catch {}
             saveSearchState();
-            location.href = baseUrl(`video/${encodeURIComponent(slug)}`);
+            location.href = baseUrl(path);
           }
         });
 

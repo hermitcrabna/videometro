@@ -2,6 +2,23 @@
 $script = $_SERVER['SCRIPT_NAME'] ?? '/';
 $dir = rtrim(str_replace('\\', '/', dirname($script)), '/');
 $home = $dir === '' ? '/' : $dir . '/';
+$host = $_SERVER['HTTP_HOST'] ?? '';
+$isLocal = strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false;
+$details = '';
+if ($isLocal) {
+  $details = "Message: {$message}\nFile: {$filepath}\nLine: {$line}\n";
+  $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+  if (is_array($trace) && !empty($trace)) {
+    $details .= "Trace:\n";
+    foreach ($trace as $t) {
+      $file = $t['file'] ?? '';
+      $lineNo = $t['line'] ?? '';
+      $fn = $t['function'] ?? '';
+      if ($file === '' && $fn === '') continue;
+      $details .= ($file !== '' ? $file : '[internal]') . ($lineNo !== '' ? ':' . $lineNo : '') . ($fn !== '' ? " {$fn}()" : '') . "\n";
+    }
+  }
+}
 ?><!doctype html>
 <html lang="it">
 <head>
@@ -17,6 +34,7 @@ $home = $dir === '' ? '/' : $dir . '/';
     .subtitle { margin:14px 0 22px; font-size:20px; color:var(--muted); }
     .home { display:inline-block; padding:12px 18px; border-radius:999px; border:1px solid rgba(255,255,255,.2); color:#fff; text-decoration:none; font-weight:600; }
     .home:hover { background: rgba(255,255,255,.08); }
+    .details { margin-top: 18px; text-align: left; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); padding: 14px; border-radius: 12px; font-size: 13px; white-space: pre-wrap; color: #fff; max-width: 720px; }
     @media (max-width: 600px) { .title { font-size:72px; } }
   </style>
 </head>
@@ -26,6 +44,9 @@ $home = $dir === '' ? '/' : $dir . '/';
       <div class="title">PHP</div>
       <div class="subtitle">Errore PHP</div>
       <a class="home" href="<?php echo htmlspecialchars($home, ENT_QUOTES, 'UTF-8'); ?>">Ritorna alla home</a>
+      <?php if ($isLocal && $details !== ''): ?>
+        <pre class="details"><?php echo htmlspecialchars($details, ENT_QUOTES, 'UTF-8'); ?></pre>
+      <?php endif; ?>
     </div>
   </div>
 </body>

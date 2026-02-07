@@ -279,8 +279,19 @@
             $subcatName = is_array($cat) ? ($cat['subcategory'] ?? '') : '';
             $catId = is_array($cat) ? ($cat['cat_id'] ?? ($v['cat_id'] ?? '')) : ($v['cat_id'] ?? '');
             $subcatId = is_array($cat) ? ($cat['subcat_id'] ?? ($v['subcat_id'] ?? '')) : ($v['subcat_id'] ?? '');
+            $isGallery = (string)($v['gallery'] ?? '0') === '1';
+            $isBlog = (string)($v['blog'] ?? '0') === '1';
+            $slug = $v['slug'] ?? $v['slug_post'] ?? $v['seo_slug'] ?? '';
+            $id = $v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? '';
+            if ($isGallery) {
+              $path = $id ? ('gallery/' . rawurlencode((string)$id)) : ($slug ? ('gallery/' . rawurlencode((string)$slug)) : '');
+            } elseif ($isBlog) {
+              $path = $slug ? ('blog/' . rawurlencode((string)$slug)) : ($id ? ('blog/' . rawurlencode((string)$id)) : '');
+            } else {
+              $path = $slug ? ('video/' . rawurlencode((string)$slug)) : ($id ? ('video/' . rawurlencode((string)$id)) : '');
+            }
           ?>
-          <div class="card">
+          <div class="card" data-slug="<?= vm_h($v['slug'] ?? $v['slug_post'] ?? $v['seo_slug'] ?? '') ?>" data-id="<?= vm_h($v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? '') ?>" data-blog="<?= vm_h($v['blog'] ?? '0') ?>" data-gallery="<?= vm_h($v['gallery'] ?? '0') ?>" data-path="<?= vm_h($path) ?>">
             <div class="thumb-wrap">
               <img class="thumb" src="<?= vm_h($thumb) ?>" alt="" loading="lazy" decoding="async">
             </div>
@@ -336,8 +347,19 @@
             $subcatName = is_array($cat) ? ($cat['subcategory'] ?? '') : '';
             $catId = is_array($cat) ? ($cat['cat_id'] ?? ($v['cat_id'] ?? '')) : ($v['cat_id'] ?? '');
             $subcatId = is_array($cat) ? ($cat['subcat_id'] ?? ($v['subcat_id'] ?? '')) : ($v['subcat_id'] ?? '');
+            $isGallery = (string)($v['gallery'] ?? '0') === '1';
+            $isBlog = (string)($v['blog'] ?? '0') === '1';
+            $slug = $v['slug'] ?? $v['slug_post'] ?? $v['seo_slug'] ?? '';
+            $id = $v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? '';
+            if ($isGallery) {
+              $path = $id ? ('gallery/' . rawurlencode((string)$id)) : ($slug ? ('gallery/' . rawurlencode((string)$slug)) : '');
+            } elseif ($isBlog) {
+              $path = $slug ? ('blog/' . rawurlencode((string)$slug)) : ($id ? ('blog/' . rawurlencode((string)$id)) : '');
+            } else {
+              $path = $slug ? ('video/' . rawurlencode((string)$slug)) : ($id ? ('video/' . rawurlencode((string)$id)) : '');
+            }
           ?>
-          <div class="card">
+          <div class="card" data-slug="<?= vm_h($v['slug'] ?? $v['slug_post'] ?? $v['seo_slug'] ?? '') ?>" data-id="<?= vm_h($v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? '') ?>" data-blog="<?= vm_h($v['blog'] ?? '0') ?>" data-gallery="<?= vm_h($v['gallery'] ?? '0') ?>" data-path="<?= vm_h($path) ?>">
             <div class="thumb-wrap">
               <img class="thumb" src="<?= vm_h($thumb) ?>" alt="" loading="lazy" decoding="async">
             </div>
@@ -395,14 +417,29 @@
     const params = new URLSearchParams(location.search);
     const aziendaId = parseInt(params.get('azienda_id') || window.APP_CONFIG?.aziendaId || '1', 10);
     const limit = parseInt(params.get('limit') || '50', 10);
-    const BASE_PATH = String(window.APP_CONFIG?.basePath || '').replace(/\/+$/,'');
+    function normalizeBasePath(p) {
+      const parts = String(p || '').split('/').filter(Boolean);
+      if (parts.length >= 2 && parts[0] === parts[1]) parts.splice(1, 1);
+      return parts.length ? '/' + parts.join('/') : '';
+    }
+    const BASE_PATH = normalizeBasePath(String(window.APP_CONFIG?.basePath || '').replace(/\/+$/,''));
     const SITE_URL = String(window.APP_CONFIG?.siteUrl || window.location.origin).replace(/\/+$/,'');
     const SITE_BASE = SITE_URL + (BASE_PATH || '');
+    const BASE_ROOT = window.location.origin + (BASE_PATH || '');
     const SSR = window.__SSR__ || null;
+    function toAbsolute(path = '') {
+      try {
+        return new URL(path, BASE_ROOT + '/').toString();
+      } catch {
+        return path;
+      }
+    }
     function baseUrl(path = '') {
       const clean = String(path || '').replace(/^\/+/, '');
-      if (!BASE_PATH) return '/' + clean;
-      return clean ? `${BASE_PATH}/${clean}` : BASE_PATH || '/';
+      const baseSeg = BASE_PATH.replace(/^\/+/, '');
+      if (!clean) return BASE_ROOT || '/';
+      if (baseSeg && (clean === baseSeg || clean.startsWith(baseSeg + '/'))) return window.location.origin + '/' + clean;
+      return `${BASE_ROOT}/${clean}`;
     }
     function withQuery(path, query) {
       const base = baseUrl(path);
@@ -1028,7 +1065,9 @@
     const GALLERY_FILTER = '1';
 
     function toFlag(val) {
-      return String(val ?? '0') === '1';
+      if (val === true || val === 'true') return true;
+      const n = parseInt(String(val ?? '0').trim(), 10);
+      return Number.isFinite(n) && n === 1;
     }
 
     function typeIcon(type, label, svg) {
@@ -1051,9 +1090,102 @@
       return typeIcon('video', 'Video', ICON_VIDEO);
     }
 
-    function shareUrlFromSlug(slug) {
+    function normalizeSlug(raw) {
+      let slug = String(raw ?? '').trim();
       if (!slug) return '';
-      return `${SITE_BASE}/video/${slug}`;
+      slug = slug.replace(/^https?:\/\/[^/]+/i, '');
+      slug = slug.replace(/^[\/]+/, '');
+      slug = slug.split('?')[0].split('#')[0];
+      const baseSeg = BASE_PATH.replace(/^\/+/, '');
+      while (baseSeg && slug.startsWith(baseSeg + '/')) {
+        slug = slug.slice(baseSeg.length + 1);
+      }
+      slug = slug.replace(/^(video|blog|gallery)\//, '');
+      return slug;
+    }
+    const FORCE_BLOG = true;
+    function normalizeNavPath(raw) {
+      let p = String(raw ?? '').trim();
+      if (!p) return '';
+      p = p.replace(/^https?:\/\/[^/]+/i, '');
+      p = p.replace(/^[\/]+/, '');
+      p = p.split('?')[0].split('#')[0];
+      const baseSeg = BASE_PATH.replace(/^\/+/, '');
+      while (baseSeg && p.startsWith(baseSeg + '/')) {
+        p = p.slice(baseSeg.length + 1);
+      }
+      if (FORCE_BLOG && !p.startsWith('gallery/')) {
+        p = p.replace(/^video\//, 'blog/');
+      }
+      return p;
+    }
+    function contentPathFromItem(v) {
+      const slug = normalizeSlug(v?.slug ?? v?.slug_post ?? v?.slug_video ?? v?.seo_slug ?? v?.url ?? v?.link ?? '');
+      const isGallery = toFlag(v?.gallery);
+      let isBlog = toFlag(v?.blog);
+      if (!isGallery && !isBlog && FORCE_BLOG) isBlog = true;
+      const id = v?.post_id ?? v?.id ?? v?.video_id ?? '';
+      if (isGallery && id) return `gallery/${encodeURIComponent(String(id))}`;
+      if (isGallery && slug) return `gallery/${slug}`;
+      if (isBlog && id) return `blog/${encodeURIComponent(String(id))}`;
+      if (isBlog && slug) return `blog/${slug}`;
+      if (slug) return `video/${slug}`;
+      if (id) return `video/${encodeURIComponent(String(id))}`;
+      return '';
+    }
+    function itemFromCard(card) {
+      return {
+        slug: card?.dataset?.slug || '',
+        post_id: card?.dataset?.id || '',
+        blog: card?.dataset?.blog || '0',
+        gallery: card?.dataset?.gallery || '0',
+        path: card?.dataset?.path || '',
+      };
+    }
+    function bindCardNavigation(root) {
+      if (!root) return;
+      root.querySelectorAll('.card').forEach(card => {
+        if (card.dataset.navBound === '1') return;
+        card.dataset.navBound = '1';
+        card.addEventListener('click', (e) => {
+          if (e.target && e.target.closest('a')) return;
+          if (e.target && e.target.closest('button')) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const data = itemFromCard(card);
+          const basePath = data.path || contentPathFromItem(data);
+          const path = normalizeNavPath(basePath);
+          if (!path) return;
+          const base = location.href.split('#')[0];
+          const from = `${base}#scroll=${window.scrollY || 0}`;
+          try { sessionStorage.setItem('vm:from', from); } catch {}
+          saveSearchState();
+          location.href = baseUrl(path);
+        });
+      });
+    }
+    function bindGlobalCardNavigation() {
+      document.addEventListener('click', (e) => {
+        const card = e.target && e.target.closest ? e.target.closest('.card') : null;
+        if (!card || !card.dataset) return;
+        if (e.target && e.target.closest('a')) return;
+        if (e.target && e.target.closest('button')) return;
+        const data = itemFromCard(card);
+        const basePath = data.path || contentPathFromItem(data);
+        const path = normalizeNavPath(basePath);
+        if (!path) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const base = location.href.split('#')[0];
+        const from = `${base}#scroll=${window.scrollY || 0}`;
+        try { sessionStorage.setItem('vm:from', from); } catch {}
+        saveSearchState();
+        location.href = baseUrl(path);
+      }, true);
+    }
+    function shareUrlFromItem(v) {
+      const path = contentPathFromItem(v);
+      return path ? toAbsolute(path) : '';
     }
 
     const latestCount = 8;
@@ -1091,7 +1223,7 @@
         const subcatName = cat?.subcategory ?? '';
         const catId = cat?.cat_id ?? v.cat_id ?? '';
         const subcatId = cat?.subcat_id ?? v.subcat_id ?? '';
-        const shareUrl = shareUrlFromSlug(v.slug ?? '');
+        const shareUrl = shareUrlFromItem(v);
         const slide = document.createElement('div');
         slide.className = 'f-slide';
         const typeIcons = contentTypeIcons(v);
@@ -1146,13 +1278,14 @@
           </div>
         `;
         slide.addEventListener('click', () => {
-          const slug = v.slug ?? '';
+          const rawPath = contentPathFromItem(v) || v?.url || v?.link || v?.slug || '';
+          const path = normalizeNavPath(rawPath);
           const base = location.href.split('#')[0];
           const from = `${base}#scroll=${window.scrollY || 0}`;
-          if (slug) {
+          if (path) {
             try { sessionStorage.setItem('vm:from', from); } catch {}
             saveSearchState();
-            location.href = baseUrl(`video/${encodeURIComponent(slug)}`);
+            location.href = baseUrl(path);
           }
         });
         slide.addEventListener('mouseenter', () => { if (featuredTimer) clearInterval(featuredTimer); });
@@ -1258,6 +1391,7 @@
       latestSection.style.display = 'block';
       latestGrid.innerHTML = '';
       renderItems(latestItems, latestGrid, { skipFeatured: false, skipLatest: false, dimGrid: false });
+      bindCardNavigation(latestGrid);
       showLatestSkeletons(false);
       return true;
     }
@@ -1278,8 +1412,7 @@
     const schemaItems = [];
     function updateVideoSchema(items) {
       items.forEach((v) => {
-        const slug = v.slug ?? '';
-        const url = shareUrlFromSlug(slug);
+        const url = shareUrlFromItem(v);
         if (!url) return;
         schemaItems.push({
           '@type': 'ListItem',
@@ -1323,7 +1456,7 @@
         const authorId = author?.id ?? '';
         const authorSlug = author?.slug ?? slugify(authorName);
         const authorHref = authorSlug ? baseUrl(`protagonisti/${authorSlug}`) : '';
-        const shareUrl = shareUrlFromSlug(v.slug ?? '');
+        const shareUrl = shareUrlFromItem(v);
         const cat = Array.isArray(v.cat) && v.cat.length ? v.cat[0] : null;
         const subcatName = cat?.subcategory ?? '';
         const catId = cat?.cat_id ?? v.cat_id ?? '';
@@ -1331,6 +1464,11 @@
 
         const card = document.createElement('div');
         card.className = 'card';
+        card.dataset.slug = v?.slug ?? v?.slug_post ?? v?.seo_slug ?? '';
+        card.dataset.id = v?.post_id ?? v?.id ?? v?.video_id ?? '';
+        card.dataset.blog = v?.blog ?? '0';
+        card.dataset.gallery = v?.gallery ?? '0';
+        card.dataset.path = contentPathFromItem(v);
         const typeIcons = contentTypeIcons(v);
         card.innerHTML = `
           <div class="thumb-wrap">
@@ -1383,18 +1521,22 @@
           </div>
         `;
 
-        card.addEventListener('click', () => {
-          const slug = v.slug ?? '';
+        card.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const data = itemFromCard(card);
+          const basePath = data.path || contentPathFromItem(data);
+          const path = normalizeNavPath(basePath || contentPathFromItem(v));
           try {
             sessionStorage.setItem(`scroll:${location.pathname}`, String(window.scrollY || 0));
             sessionStorage.setItem(`scroll:pending:${location.pathname}`, '1');
           } catch {}
           const base = location.href.split('#')[0];
           const from = `${base}#scroll=${window.scrollY || 0}`;
-          if (slug) {
+          if (path) {
             try { sessionStorage.setItem('vm:from', from); } catch {}
             saveSearchState();
-            location.href = baseUrl(`video/${encodeURIComponent(slug)}`);
+            location.href = baseUrl(path);
           }
         });
 
@@ -1462,6 +1604,7 @@
       if (!SSR?.items || !Array.isArray(SSR.items)) return false;
       grid.innerHTML = '';
       renderItems(SSR.items, grid, { skipFeatured: true, skipLatest: isHomeNoFilters(), dimGrid: true, withInlineBanners: true });
+      bindCardNavigation(grid);
       offset = typeof SSR.offset === 'number' ? SSR.offset : (isHomeNoFilters() ? (latestRawCount || 0) : 0);
       ended = SSR.items.length < (SSR.limit || limit);
       showSkeletons(false);
@@ -1747,6 +1890,9 @@
       if (!applyMainSSR()) loadNextPage().then(ensureFillViewport);
       else ensureFillViewport();
     }
+    bindCardNavigation(latestGrid);
+    bindCardNavigation(grid);
+    bindGlobalCardNavigation();
     bindSoftFadeImages();
     loadCategories();
     loadAzienda();
