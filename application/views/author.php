@@ -303,7 +303,9 @@
         <?php
           $title = $v['title'] ?? $v['seo-title'] ?? 'Senza titolo';
           $thumb = $v['image'] ?? $v['thumbnail'] ?? $v['thumb'] ?? $v['poster'] ?? '';
-          $summary = strip_tags((string)($v['summary'] ?? $v['seo-description'] ?? ''));
+          $rawSummary = (string)($v['summary'] ?? $v['seo-description'] ?? '');
+          $summary = strip_tags($rawSummary);
+          $summaryHasHtml = ($rawSummary !== '' && strip_tags($rawSummary) !== $rawSummary);
           $author = is_array($v['authors'] ?? null) && !empty($v['authors']) ? $v['authors'][0] : null;
           $aImg = is_array($author) ? ($author['image'] ?? '') : '';
           $aName = is_array($author) ? ($author['name'] ?? '') : '';
@@ -322,10 +324,13 @@
           $catId = is_array($cat) ? ($cat['cat_id'] ?? ($v['cat_id'] ?? '')) : ($v['cat_id'] ?? '');
           $subcatId = is_array($cat) ? ($cat['subcat_id'] ?? ($v['subcat_id'] ?? '')) : ($v['subcat_id'] ?? '');
           $type = strtolower((string)($v['type'] ?? $v['tipo'] ?? $v['content_type'] ?? ''));
-          $isGallery = (string)($v['gallery'] ?? '0') === '1' || $type === 'gallery';
-          $isBlog = (string)($v['blog'] ?? '0') === '1' || !empty($v['slug_post']) || $type === 'blog';
-          $videoUrl = (string)($v['videolUrl'] ?? $v['videoUrl'] ?? $v['video_url'] ?? $v['video'] ?? '');
-          if (!$isBlog && !$isGallery && $videoUrl === '') $isBlog = true;
+          $blogVal = $v['blog'] ?? null;
+          $galleryVal = $v['gallery'] ?? null;
+          $hasTypeFlags = !is_null($blogVal) || !is_null($galleryVal);
+          $isGallery = (string)($galleryVal ?? '0') === '1' || $type === 'gallery';
+          $isBlog = (string)($blogVal ?? '0') === '1' || !empty($v['slug_post']) || $type === 'blog';
+          // If flags exist and neither is true, treat as video (keep default).
+          if (!$hasTypeFlags && !$isBlog && !$isGallery && $summaryHasHtml) $isBlog = true;
           $slug = $v['slug_post'] ?? $v['slug'] ?? $v['seo_slug'] ?? '';
           $id = $v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? '';
           if ($isGallery) {
@@ -336,7 +341,7 @@
             $path = $slug ? ('video/' . rawurlencode((string)$slug)) : ($id ? ('video/' . rawurlencode((string)$id)) : '');
           }
         ?>
-        <div class="card" data-slug="<?= vm_h($slug) ?>" data-id="<?= vm_h($id) ?>" data-blog="<?= vm_h($isBlog ? '1' : '0') ?>" data-gallery="<?= vm_h($isGallery ? '1' : '0') ?>" data-type="<?= vm_h($type) ?>" data-path="<?= vm_h($path) ?>">
+        <div class="card" data-slug="<?= vm_h($slug) ?>" data-id="<?= vm_h($id) ?>" data-blog="<?= vm_h($isBlog ? '1' : '0') ?>" data-gallery="<?= vm_h($isGallery ? '1' : '0') ?>" data-type="<?= vm_h($type) ?>" data-summary-html="<?= vm_h($summaryHasHtml ? '1' : '0') ?>" data-path="<?= vm_h($path) ?>">
           <div class="thumb-wrap">
             <img class="thumb" src="<?= vm_h($thumb) ?>" alt="" loading="lazy" decoding="async">
             <div class="thumb-overlay"></div>
@@ -884,10 +889,17 @@
     function contentPathFromItem(v) {
       const slug = normalizeSlug(v?.slug_post ?? v?.slug ?? v?.seo_slug ?? v?.url ?? v?.link ?? '');
       const type = String(v?.type ?? v?.tipo ?? v?.content_type ?? '').toLowerCase();
-      const isGallery = toFlag(v?.gallery) || type === 'gallery';
-      let isBlog = toFlag(v?.blog) || Boolean(v?.slug_post) || type === 'blog';
-      const videoUrl = String(v?.videolUrl ?? v?.videoUrl ?? v?.video_url ?? v?.video ?? '').trim();
-      if (!isBlog && !isGallery && !videoUrl) isBlog = true;
+      const blogVal = v?.blog ?? null;
+      const galleryVal = v?.gallery ?? null;
+      const hasTypeFlags = blogVal !== null || galleryVal !== null;
+      const isGallery = toFlag(galleryVal) || type === 'gallery';
+      let isBlog = toFlag(blogVal) || Boolean(v?.slug_post) || type === 'blog';
+      // If flags exist and neither is true, treat as video (keep default).
+      if (!hasTypeFlags && !isBlog && !isGallery) {
+        const rawSummary = String(v?.summary ?? v?.['seo-description'] ?? '');
+        if (rawSummary && rawSummary !== stripHtml(rawSummary)) isBlog = true;
+        if (String(v?.summary_html ?? v?.summaryHtml ?? '') === '1') isBlog = true;
+      }
       const id = v?.post_id ?? v?.id ?? v?.video_id ?? '';
       if (isGallery && slug) return `gallery/${slug}`;
       if (isGallery && id) return `gallery/${encodeURIComponent(String(id))}`;
@@ -905,10 +917,17 @@
     const ICON_GALLERY = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.5"></circle><path d="M21 15l-5-5-6 6-3-3-4 4"></path></svg>`;
     function contentTypeIcons(v) {
       const type = String(v?.type ?? v?.tipo ?? v?.content_type ?? '').toLowerCase();
-      const isGallery = toFlag(v?.gallery) || type === 'gallery';
-      let isBlog = toFlag(v?.blog) || Boolean(v?.slug_post) || type === 'blog';
-      const videoUrl = String(v?.videolUrl ?? v?.videoUrl ?? v?.video_url ?? v?.video ?? '').trim();
-      if (!isBlog && !isGallery && !videoUrl) isBlog = true;
+      const blogVal = v?.blog ?? null;
+      const galleryVal = v?.gallery ?? null;
+      const hasTypeFlags = blogVal !== null || galleryVal !== null;
+      const isGallery = toFlag(galleryVal) || type === 'gallery';
+      let isBlog = toFlag(blogVal) || Boolean(v?.slug_post) || type === 'blog';
+      // If flags exist and neither is true, treat as video (keep default).
+      if (!hasTypeFlags && !isBlog && !isGallery) {
+        const rawSummary = String(v?.summary ?? v?.['seo-description'] ?? '');
+        if (rawSummary && rawSummary !== stripHtml(rawSummary)) isBlog = true;
+        if (String(v?.summary_html ?? v?.summaryHtml ?? '') === '1') isBlog = true;
+      }
       if (isBlog || isGallery) {
         return [
           isBlog ? typeIcon('blog', 'Blog', ICON_BLOG) : '',
@@ -925,6 +944,7 @@
         blog: card?.dataset?.blog || '0',
         gallery: card?.dataset?.gallery || '0',
         type: card?.dataset?.type || '',
+        summary_html: card?.dataset?.summaryHtml || '0',
         path: card?.dataset?.path || '',
       };
     }
@@ -1022,10 +1042,17 @@
         const card = document.createElement('div');
         card.className = 'card';
         const typeIcons = contentTypeIcons(v);
+        const vType = String(v?.type ?? v?.tipo ?? v?.content_type ?? '').toLowerCase();
+        const blogVal = v?.blog ?? null;
+        const galleryVal = v?.gallery ?? null;
+        const hasTypeFlags = blogVal !== null || galleryVal !== null;
+        const isGallery = toFlag(galleryVal) || vType === 'gallery';
+        let isBlog = toFlag(blogVal) || Boolean(v?.slug_post) || vType === 'blog';
+        // If flags exist and neither is true, treat as video (keep default).
         card.dataset.slug = String(v?.slug_post ?? v?.slug ?? v?.seo_slug ?? '');
         card.dataset.id = String(v?.post_id ?? v?.id ?? v?.video_id ?? '');
-        card.dataset.blog = String(v?.blog ?? (v?.slug_post ? '1' : '0'));
-        card.dataset.gallery = String(v?.gallery ?? '0');
+        card.dataset.blog = isBlog ? '1' : '0';
+        card.dataset.gallery = isGallery ? '1' : '0';
         card.dataset.type = String(v?.type ?? v?.tipo ?? v?.content_type ?? '');
         const computedPath = contentPathFromItem(v);
         if (computedPath) card.dataset.path = computedPath;
