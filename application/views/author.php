@@ -96,9 +96,12 @@
     .hamburger span::before, .hamburger span::after { content:""; position:absolute; left:0; width: 18px; height: 2px; background: currentColor; }
     .hamburger span::before { top:-6px; }
     .hamburger span::after { top:6px; }
-    .search { display:flex; align-items:center; gap: 10px; width: 360px; max-width: 360px; position: relative; }
+    .search { display:none; align-items:center; gap: 10px; width: 360px; max-width: 360px; position: relative; }
     .search input { flex:1; height: 38px; border-radius: 999px; border: 1px solid rgba(255,255,255,.18); background:#151b2b; color:#fff; padding: 0 40px 0 14px; font-size: 15px; font-family: 'Montserrat', system-ui, Arial, sans-serif; }
     .search input::placeholder { color: rgba(255,255,255,.6); }
+    .search.active { display:flex; }
+    .topbar-inner .search { width: 100%; max-width: none; }
+    .nav.hidden { display:none; }
     .clear-btn { width: 28px; height: 28px; border-radius: 999px; border: 1px solid rgba(255,80,80,.5); background: transparent; color: #ff6b6b; display:none; place-items:center; cursor:pointer; position:absolute; right: 6px; top: 50%; transform: translateY(-50%); }
     .clear-btn.visible { display:grid; }
     .clear-btn svg { width: 16px; height: 16px; }
@@ -130,8 +133,6 @@
     .author-sticky.active { display:block; }
     .author-sticky-inner { background: rgba(48,58,82,0.92); border: 1px solid rgba(255,255,255,.06); border-radius: 999px; padding: 10px 14px; display:flex; align-items:center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
     .author-sticky .avatar { width: 34px; height: 34px; border-width: 3px; }
-    .author-sticky .search { width: 100%; max-width: none; }
-    .author-sticky .search input { height: 34px; }
     .avatar { width: 72px; height: 72px; border-radius: 999px; border: 4px solid rgba(255,255,255,.08); object-fit: cover; background:#1b2234; }
     .hero h1 { margin:0; font-size: 28px; }
     .meta { color: var(--muted); margin-top: 4px; }
@@ -227,13 +228,15 @@
 
 
       <div class="spacer"></div>
-      <a class="icon-btn hide-mobile" href="<?= htmlspecialchars($baseHref) ?>" aria-label="Video">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 6h16v12H4z"></path>
-          <path d="M10 8l6 4-6 4z"></path>
-        </svg>
-      </a>
-      <button class="icon-btn search-btn" id="searchJump" aria-label="Cerca">
+      <div class="search" id="searchBar">
+        <input id="searchInput" type="search" placeholder="Cerca nei video dell’autore..." autocomplete="off" />
+        <button class="clear-btn" id="searchClear" aria-label="Svuota ricerca">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 6l12 12M18 6l-12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <button class="icon-btn search-btn" id="searchToggle" aria-label="Cerca">
         <svg class="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="7"></circle>
           <path d="M20 20l-3.5-3.5"></path>
@@ -272,29 +275,7 @@
             <div class="meta" id="authorMeta"></div>
           </div>
         </div>
-        <div class="hero-right">
-          <div class="search" id="searchBar">
-            <input id="searchInput" type="search" placeholder="Cerca nei video dell’autore..." autocomplete="off" />
-            <button class="clear-btn" id="searchClear" aria-label="Svuota ricerca">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M6 6l12 12M18 6l-12 12"></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="author-sticky" id="authorSticky">
-      <div class="author-sticky-inner">
-        <img id="authorImgSticky" class="avatar" src="" alt="">
-        <div class="search">
-          <input id="searchInputSticky" type="search" placeholder="Cerca nei suoi contenuti..." autocomplete="off" />
-          <button class="clear-btn" id="searchClearSticky" aria-label="Svuota ricerca">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M6 6l12 12M18 6l-12 12"></path>
-            </svg>
-          </button>
-        </div>
+        <div class="hero-right"></div>
       </div>
     </div>
 
@@ -459,15 +440,13 @@
     const sentinel = document.getElementById('sentinel');
     const searchInput = document.getElementById('searchInput');
     const searchClear = document.getElementById('searchClear');
-    const authorSticky = document.getElementById('authorSticky');
-    const authorImgSticky = document.getElementById('authorImgSticky');
-    const searchInputSticky = document.getElementById('searchInputSticky');
-    const searchClearSticky = document.getElementById('searchClearSticky');
+    const searchBar = document.getElementById('searchBar');
+    const searchToggle = document.getElementById('searchToggle');
     const mobileToggle = document.getElementById('mobileToggle');
     const mobileNav = document.getElementById('mobileNav');
+    const navMenu = document.getElementById('navMenu');
     const navBlog = document.getElementById('navBlog');
     const mobileBlog = document.getElementById('mobileBlog');
-    const searchJump = document.getElementById('searchJump');
     const navDynamic = document.getElementById('navDynamic');
     const mobileNavDynamic = document.getElementById('mobileNavDynamic');
     const brandLogo = document.getElementById('brandLogo');
@@ -486,7 +465,6 @@
     document.getElementById('authorName').textContent = authorName;
     const imgEl = document.getElementById('authorImg');
     if (authorImg) imgEl.src = authorImg;
-    if (authorImg) authorImgSticky.src = authorImg;
     const canonicalEl = document.querySelector('link[rel="canonical"]');
     if (canonicalEl) {
       const nameSlug = AUTHOR.slug || slugify(authorName);
@@ -1279,51 +1257,35 @@
     searchInput.addEventListener('input', (e) => {
       const value = e.target.value;
       searchClear.classList.toggle('visible', value.trim().length > 0);
-      if (searchInputSticky.value !== value) searchInputSticky.value = value;
-      searchClearSticky.classList.toggle('visible', value.trim().length > 0);
       if (searchDebounce) clearTimeout(searchDebounce);
       searchDebounce = setTimeout(() => handleSearchInput(value), 300);
     });
 
-    searchInput.addEventListener('focus', () => {
-      document.body.classList.add('searching-mobile');
-    });
-    searchInput.addEventListener('blur', () => {
+    function closeSearch() {
+      searchBar.classList.remove('active');
+      navMenu.classList.remove('hidden');
+      searchInput.value = '';
+      searchTerm = '';
+      searchClear.classList.remove('visible');
       document.body.classList.remove('searching-mobile');
+      resetAndLoad();
+    }
+
+    searchToggle.addEventListener('click', () => {
+      const active = searchBar.classList.toggle('active');
+      navMenu.classList.toggle('hidden', active);
+      if (active) {
+        searchInput.focus();
+        document.body.classList.add('searching-mobile');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        closeSearch();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     });
 
     searchClear.addEventListener('click', () => {
-      searchInput.value = '';
-      searchClear.classList.remove('visible');
-      searchInputSticky.value = '';
-      searchClearSticky.classList.remove('visible');
-      searchTerm = '';
-      resetAndLoad();
-    });
-
-    searchInputSticky.addEventListener('input', (e) => {
-      const value = e.target.value;
-      searchClearSticky.classList.toggle('visible', value.trim().length > 0);
-      if (searchInput.value !== value) searchInput.value = value;
-      searchClear.classList.toggle('visible', value.trim().length > 0);
-      if (searchDebounce) clearTimeout(searchDebounce);
-      searchDebounce = setTimeout(() => handleSearchInput(value), 300);
-    });
-
-    searchInputSticky.addEventListener('focus', () => {
-      document.body.classList.add('searching-mobile');
-    });
-    searchInputSticky.addEventListener('blur', () => {
-      document.body.classList.remove('searching-mobile');
-    });
-
-    searchClearSticky.addEventListener('click', () => {
-      searchInputSticky.value = '';
-      searchClearSticky.classList.remove('visible');
-      searchInput.value = '';
-      searchClear.classList.remove('visible');
-      searchTerm = '';
-      resetAndLoad();
+      closeSearch();
     });
 
     mobileToggle.addEventListener('click', () => {
@@ -1333,23 +1295,12 @@
       if (e.target && e.target.tagName === 'A') mobileNav.classList.remove('open');
     });
 
-    searchJump.addEventListener('click', () => {
-      if (document.activeElement === searchInput || document.activeElement === searchInputSticky) {
-        searchInput.blur();
-        searchInputSticky.blur();
-        document.body.classList.remove('searching-mobile');
-        return;
-      }
-      searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => searchInput.focus(), 250);
+    searchInput.addEventListener('focus', () => {
+      document.body.classList.add('searching-mobile');
     });
-
-    const onSticky = () => {
-      const y = window.scrollY || 0;
-      authorSticky.classList.toggle('active', y > 140);
-    };
-    window.addEventListener('scroll', onSticky, { passive: true });
-    onSticky();
+    searchInput.addEventListener('blur', () => {
+      document.body.classList.remove('searching-mobile');
+    });
 
     loadCategories();
     loadAzienda();
