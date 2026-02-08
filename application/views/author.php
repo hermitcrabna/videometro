@@ -141,6 +141,15 @@
     .grid.dim .card { opacity: .35; transition: opacity .2s ease; }
     .grid.dim .card.show-desc { opacity: 1; }
     .card { background:#303a52; border-radius:14px; overflow:hidden; cursor:pointer; border: 1px solid rgba(255,255,255,.06); transition: background .2s ease, border-color .2s ease; position: relative; }
+    .thumb-wrap { position:relative; width:100%; }
+    .thumb-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:8px; opacity:0; pointer-events:none; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.45) 100%); transition: opacity .2s ease; }
+    .card:hover .thumb-overlay,
+    .thumb-wrap:hover .thumb-overlay { opacity:1; }
+    .type-icon { width:46px; height:46px; border-radius:999px; background: color-mix(in srgb, var(--accent) 22%, rgba(15,17,21,.7)); border:1px solid rgba(255,255,255,.2); display:grid; place-items:center; box-shadow: 0 6px 16px rgba(0,0,0,.35); }
+    .type-icon svg { width:24px; height:24px; display:block; }
+    .type-icon.blog { background: color-mix(in srgb, var(--accent) 22%, rgba(10, 42, 66, .75)); }
+    .type-icon.gallery { background: color-mix(in srgb, var(--accent) 22%, rgba(32, 58, 26, .75)); }
+    .type-icon.video { background: color-mix(in srgb, var(--accent) 22%, rgba(84, 20, 20, .75)); }
     .card:hover { background: color-mix(in srgb, var(--accent) 65%, #303a52); border-color: color-mix(in srgb, var(--accent) 70%, rgba(255,255,255,.06)); }
     .tag { background: rgba(15,17,21,.6); color:#fff; font-size:11px; padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.15); text-decoration:none; transition: background .2s ease; }
     .tag:hover { background: var(--accent); }
@@ -312,9 +321,26 @@
           $subcatName = is_array($cat) ? ($cat['subcategory'] ?? '') : '';
           $catId = is_array($cat) ? ($cat['cat_id'] ?? ($v['cat_id'] ?? '')) : ($v['cat_id'] ?? '');
           $subcatId = is_array($cat) ? ($cat['subcat_id'] ?? ($v['subcat_id'] ?? '')) : ($v['subcat_id'] ?? '');
+          $type = strtolower((string)($v['type'] ?? $v['tipo'] ?? $v['content_type'] ?? ''));
+          $isGallery = (string)($v['gallery'] ?? '0') === '1' || $type === 'gallery';
+          $isBlog = (string)($v['blog'] ?? '0') === '1' || !empty($v['slug_post']) || $type === 'blog';
+          $videoUrl = (string)($v['videolUrl'] ?? $v['videoUrl'] ?? $v['video_url'] ?? $v['video'] ?? '');
+          if (!$isBlog && !$isGallery && $videoUrl === '') $isBlog = true;
+          $slug = $v['slug_post'] ?? $v['slug'] ?? $v['seo_slug'] ?? '';
+          $id = $v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? '';
+          if ($isGallery) {
+            $path = $id ? ('gallery/' . rawurlencode((string)$id)) : ($slug ? ('gallery/' . rawurlencode((string)$slug)) : '');
+          } elseif ($isBlog) {
+            $path = $id ? ('blog/' . rawurlencode((string)$id)) : ($slug ? ('blog/' . rawurlencode((string)$slug)) : '');
+          } else {
+            $path = $slug ? ('video/' . rawurlencode((string)$slug)) : ($id ? ('video/' . rawurlencode((string)$id)) : '');
+          }
         ?>
-        <div class="card">
-          <img class="thumb" src="<?= vm_h($thumb) ?>" alt="" loading="lazy" decoding="async">
+        <div class="card" data-slug="<?= vm_h($slug) ?>" data-id="<?= vm_h($id) ?>" data-blog="<?= vm_h($isBlog ? '1' : '0') ?>" data-gallery="<?= vm_h($isGallery ? '1' : '0') ?>" data-type="<?= vm_h($type) ?>" data-path="<?= vm_h($path) ?>">
+          <div class="thumb-wrap">
+            <img class="thumb" src="<?= vm_h($thumb) ?>" alt="" loading="lazy" decoding="async">
+            <div class="thumb-overlay"></div>
+          </div>
           <div class="card-meta">
             <p class="title"><?= vm_h($title) ?></p>
             <p class="desc"><?= vm_h($summary) ?></p>
@@ -814,6 +840,20 @@
       megaMenu.addEventListener('mouseenter', openMega);
       megaMenu.addEventListener('mouseleave', closeMega);
     }
+    function bindMobileSubmenus() {
+      if (!mobileNavDynamic) return;
+      const buttons = mobileNavDynamic.querySelectorAll('.mobile-cat');
+      buttons.forEach(btn => {
+        const sub = btn.nextElementSibling;
+        if (!sub || !sub.classList.contains('mobile-sub')) return;
+        btn.addEventListener('click', () => {
+          const open = sub.classList.toggle('open');
+          if (open && sub.childElementCount === 0) {
+            loadSubcategoriesInto(sub, btn.dataset.catId);
+          }
+        });
+      });
+    }
 
     function stripHtml(html) {
       const div = document.createElement('div');
@@ -822,7 +862,12 @@
     }
 
     function toFlag(val) {
-      return parseInt(String(val ?? '0'), 10) === 1;
+      if (val === true) return true;
+      if (val === false || val == null) return false;
+      const s = String(val).trim().toLowerCase();
+      if (s === 'true' || s === 'yes') return true;
+      const n = parseInt(s, 10);
+      return Number.isFinite(n) && n === 1;
     }
     function normalizeSlug(raw) {
       let slug = String(raw ?? '').trim();
@@ -837,18 +882,90 @@
       return slug;
     }
     function contentPathFromItem(v) {
-      const slug = normalizeSlug(v?.slug ?? v?.url ?? v?.link ?? '');
-      const isGallery = toFlag(v?.gallery);
-      const isBlog = toFlag(v?.blog);
+      const slug = normalizeSlug(v?.slug_post ?? v?.slug ?? v?.seo_slug ?? v?.url ?? v?.link ?? '');
+      const type = String(v?.type ?? v?.tipo ?? v?.content_type ?? '').toLowerCase();
+      const isGallery = toFlag(v?.gallery) || type === 'gallery';
+      let isBlog = toFlag(v?.blog) || Boolean(v?.slug_post) || type === 'blog';
+      const videoUrl = String(v?.videolUrl ?? v?.videoUrl ?? v?.video_url ?? v?.video ?? '').trim();
+      if (!isBlog && !isGallery && !videoUrl) isBlog = true;
       const id = v?.post_id ?? v?.id ?? v?.video_id ?? '';
       if (isGallery && id) return `gallery/${encodeURIComponent(String(id))}`;
       if (isGallery && slug) return `gallery/${slug}`;
-      if (isBlog && slug) return `blog/${slug}`;
       if (isBlog && id) return `blog/${encodeURIComponent(String(id))}`;
+      if (isBlog && slug) return `blog/${slug}`;
       if (slug) return `video/${slug}`;
       if (id) return `video/${encodeURIComponent(String(id))}`;
       return '';
     }
+    function typeIcon(type, label, svg) {
+      return `<span class="type-icon ${type}" aria-label="${label}" title="${label}">${svg}</span>`;
+    }
+    const ICON_VIDEO = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 6l10 6-10 6V6z"></path></svg>`;
+    const ICON_BLOG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3h6l4 4v14H8z"></path><path d="M14 3v5h5"></path><path d="M10 13h6M10 17h6"></path></svg>`;
+    const ICON_GALLERY = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.5"></circle><path d="M21 15l-5-5-6 6-3-3-4 4"></path></svg>`;
+    function contentTypeIcons(v) {
+      const type = String(v?.type ?? v?.tipo ?? v?.content_type ?? '').toLowerCase();
+      const isGallery = toFlag(v?.gallery) || type === 'gallery';
+      let isBlog = toFlag(v?.blog) || Boolean(v?.slug_post) || type === 'blog';
+      const videoUrl = String(v?.videolUrl ?? v?.videoUrl ?? v?.video_url ?? v?.video ?? '').trim();
+      if (!isBlog && !isGallery && !videoUrl) isBlog = true;
+      if (isBlog || isGallery) {
+        return [
+          isBlog ? typeIcon('blog', 'Blog', ICON_BLOG) : '',
+          isGallery ? typeIcon('gallery', 'Galleria', ICON_GALLERY) : '',
+        ].filter(Boolean).join('');
+      }
+      return typeIcon('video', 'Video', ICON_VIDEO);
+    }
+    
+    function itemFromCard(card) {
+      return {
+        slug: card?.dataset?.slug || '',
+        post_id: card?.dataset?.id || '',
+        blog: card?.dataset?.blog || '0',
+        gallery: card?.dataset?.gallery || '0',
+        type: card?.dataset?.type || '',
+        path: card?.dataset?.path || '',
+      };
+    }
+    function bindCardNavigation(root) {
+      if (!root) return;
+      const cards = root.classList && root.classList.contains('card') ? [root] : root.querySelectorAll('.card');
+      cards.forEach(card => {
+        if (card.dataset.navBound === '1') return;
+        card.dataset.navBound = '1';
+        card.addEventListener('click', (e) => {
+          if (e.target && e.target.closest('a')) return;
+          if (e.target && e.target.closest('button')) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const data = itemFromCard(card);
+          const basePath = data.path || contentPathFromItem(data);
+          const path = basePath || contentPathFromItem(data);
+          if (!path) return;
+          const base = location.href.split('#')[0];
+          const from = `${base}#scroll=${window.scrollY || 0}`;
+          try { sessionStorage.setItem('vm:from', from); } catch {}
+          location.href = baseUrl(path);
+        });
+      });
+    }
+    function decorateCardOverlays(root) {
+      if (!root) return;
+      const cards = root.classList && root.classList.contains('card') ? [root] : root.querySelectorAll('.card');
+      cards.forEach(card => {
+        let overlay = card.querySelector('.thumb-overlay');
+        if (!overlay) {
+          const wrap = card.querySelector('.thumb-wrap');
+          if (!wrap) return;
+          overlay = document.createElement('div');
+          overlay.className = 'thumb-overlay';
+          wrap.appendChild(overlay);
+        }
+        overlay.innerHTML = contentTypeIcons(itemFromCard(card));
+      });
+    }
+
     function shareUrlFromItem(v) {
       const path = contentPathFromItem(v);
       return path ? `${SITE_BASE}/${path}` : '';
@@ -904,8 +1021,19 @@
 
         const card = document.createElement('div');
         card.className = 'card';
+        const typeIcons = contentTypeIcons(v);
+        card.dataset.slug = String(v?.slug_post ?? v?.slug ?? v?.seo_slug ?? '');
+        card.dataset.id = String(v?.post_id ?? v?.id ?? v?.video_id ?? '');
+        card.dataset.blog = String(v?.blog ?? (v?.slug_post ? '1' : '0'));
+        card.dataset.gallery = String(v?.gallery ?? '0');
+        card.dataset.type = String(v?.type ?? v?.tipo ?? v?.content_type ?? '');
+        const computedPath = contentPathFromItem(v);
+        if (computedPath) card.dataset.path = computedPath;
         card.innerHTML = `
-          <img class="thumb" src="${escapeHtml(thumb)}" alt="" loading="lazy" decoding="async">
+          <div class="thumb-wrap">
+            <img class="thumb" src="${escapeHtml(thumb)}" alt="" loading="lazy" decoding="async">
+            <div class="thumb-overlay">${typeIcons}</div>
+          </div>
           <div class="card-meta">
             <p class="title">${escapeHtml(title)}</p>
             <p class="desc">${escapeHtml(summary)}</p>
@@ -951,18 +1079,7 @@
             </div>
           </div>
         `;
-        card.addEventListener('click', () => {
-          const path = contentPathFromItem(v);
-          try {
-            sessionStorage.setItem(`scroll:${location.pathname}`, String(window.scrollY || 0));
-          } catch {}
-          const base = location.href.split('#')[0];
-          const from = `${base}#scroll=${window.scrollY || 0}`;
-          if (path) {
-            try { sessionStorage.setItem('vm:from', from); } catch {}
-            location.href = baseUrl(path);
-          }
-        });
+        bindCardNavigation(card);
         const shareBtn = card.querySelector('.share-btn');
         const sharePanel = card.querySelector('.share-panel');
         let shareCloseTimer = null;
@@ -1006,6 +1123,8 @@
         }
       });
       grid.appendChild(frag);
+      bindCardNavigation(grid);
+      decorateCardOverlays(grid);
       bindSoftFadeImages(grid);
       restoreScrollIfNeeded();
       updateVideoSchema(items);
@@ -1015,6 +1134,8 @@
       if (!SSR?.items || !Array.isArray(SSR.items)) return false;
       grid.innerHTML = '';
       renderItems(SSR.items);
+      bindCardNavigation(grid);
+      decorateCardOverlays(grid);
       offset = typeof SSR.offset === 'number' ? SSR.offset : SSR.items.length;
       ended = SSR.items.length < (SSR.limit || limit);
       return true;

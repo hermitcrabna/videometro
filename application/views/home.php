@@ -1207,6 +1207,7 @@
         });
       });
     }
+
     function shareUrlFromItem(v) {
       const path = contentPathFromItem(v);
       return path ? `${SITE_BASE}/${path}` : '';
@@ -1214,6 +1215,7 @@
 
     const latestCount = 8;
     let latestItems = [];
+    let latestRawCount = 0;
     const latestIds = new Set();
     let featuredItems = [];
     let featuredIndex = 0;
@@ -1231,7 +1233,7 @@
       if (featuredSection) featuredSection.style.display = 'block';
       featuredWrap.style.display = 'block';
       featuredTrack.innerHTML = '';
-      featuredItems.forEach((v, i) => {
+      featuredItems.forEach((v) => {
         const title = v.title ?? v['seo-title'] ?? 'Video';
         const thumb = v.image ?? v.thumbnail ?? v.thumb ?? v.poster ?? '';
         const summary = stripHtml(v.summary ?? v['seo-description'] ?? '');
@@ -1301,7 +1303,8 @@
           </div>
         `;
         slide.addEventListener('click', () => {
-          const path = contentPathFromItem(v);
+          const rawPath = contentPathFromItem(v) || v?.url || v?.link || v?.slug || '';
+          const path = normalizeNavPath(rawPath);
           const base = location.href.split('#')[0];
           const from = `${base}#scroll=${window.scrollY || 0}`;
           if (path) {
@@ -1311,29 +1314,15 @@
           }
         });
         slide.addEventListener('mouseenter', () => { if (featuredTimer) clearInterval(featuredTimer); });
-        slide.addEventListener('mouseleave', () => {
-          startFeaturedAutoplay();
-          if (sharePanel && sharePanel.classList.contains('open')) {
-            if (shareCloseTimer) clearTimeout(shareCloseTimer);
-            shareCloseTimer = setTimeout(() => sharePanel.classList.remove('open'), 180);
-          }
-        });
+        slide.addEventListener('mouseleave', () => startFeaturedAutoplay());
         const shareBtn = slide.querySelector('.share-btn');
         const sharePanel = slide.querySelector('.share-panel');
-        let shareCloseTimer = null;
         if (shareBtn && sharePanel) {
           shareBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             sharePanel.classList.toggle('open');
           });
           sharePanel.addEventListener('click', (e) => e.stopPropagation());
-          sharePanel.addEventListener('mouseenter', () => {
-            if (shareCloseTimer) clearTimeout(shareCloseTimer);
-          });
-          sharePanel.addEventListener('mouseleave', () => {
-            if (!sharePanel.classList.contains('open')) return;
-            shareCloseTimer = setTimeout(() => sharePanel.classList.remove('open'), 180);
-          });
         }
         featuredTrack.appendChild(slide);
       });
@@ -1368,15 +1357,23 @@
     }
 
     async function loadFeatured() {
+      if (!featuredTrack || !featuredWrap || !featuredSection) return;
+      featuredTrack.innerHTML = '';
       try {
-        const res = await fetch(`${baseUrl('api/videos.php')}?azienda_id=${encodeURIComponent(aziendaId)}&featured=1&limit=10&offset=0`, {
+        const qs = new URLSearchParams();
+        if (aziendaId) qs.set('azienda_id', String(aziendaId));
+        qs.set('limit', '10');
+        qs.set('offset', '0');
+        qs.set('featured', '1');
+        const res = await fetch(`${baseUrl('api/videos.php')}?${qs.toString()}`, {
           headers: { 'Accept': 'application/json' },
         });
-        if (!res.ok) return;
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        const items = extractItems(data) || [];
-        featuredItems = items;
-        items.forEach(v => {
+        const rawItems = extractItems(data) || [];
+        featuredItems = rawItems;
+        featuredIds.clear();
+        featuredItems.forEach(v => {
           const id = v.id ?? v.video_id;
           if (id) featuredIds.add(String(id));
         });
@@ -1384,6 +1381,8 @@
         startFeaturedAutoplay();
       } catch (e) {
         console.error(e);
+        if (featuredSection) featuredSection.style.display = 'none';
+        featuredWrap.style.display = 'none';
       }
     }
 
@@ -1402,7 +1401,9 @@
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        const items = extractItems(data) || [];
+        const rawItems = extractItems(data) || [];
+        latestRawCount = rawItems.length;
+        const items = rawItems;
         latestItems = items;
         latestIds.clear();
         items.forEach(v => {
@@ -1416,7 +1417,6 @@
         }
         latestSection.style.display = 'block';
         renderItems(items, latestGrid, { skipFeatured: false, skipLatest: false, dimGrid: false });
-        bindCardNavigation(latestGrid);
         showLatestSkeletons(false);
       } catch (e) {
         console.error(e);
@@ -1428,6 +1428,7 @@
     function applyLatestSSR() {
       if (!latestGrid || !latestSection || !SSR?.latest || !Array.isArray(SSR.latest)) return false;
       latestItems = SSR.latest;
+      latestRawCount = latestItems.length;
       latestIds.clear();
       latestItems.forEach(v => {
         const id = v.id ?? v.video_id;
@@ -1462,7 +1463,6 @@
     const schemaItems = [];
     function updateVideoSchema(items) {
       items.forEach((v) => {
-        const slug = v.slug ?? '';
         const url = shareUrlFromItem(v);
         if (!url) return;
         schemaItems.push({
@@ -1515,6 +1515,12 @@
 
         const card = document.createElement('div');
         card.className = 'card';
+        card.dataset.slug = String(v?.slug_post ?? v?.slug ?? v?.seo_slug ?? '');
+        card.dataset.id = String(v?.post_id ?? v?.id ?? v?.video_id ?? '');
+        card.dataset.blog = String(v?.blog ?? (v?.slug_post ? '1' : '0'));
+        card.dataset.gallery = String(v?.gallery ?? '0');
+        const computedPath = contentPathFromItem(v);
+        if (computedPath) card.dataset.path = computedPath;
         const typeIcons = contentTypeIcons(v);
         card.innerHTML = `
           <div class="thumb-wrap">
@@ -1567,21 +1573,6 @@
           </div>
         `;
 
-        card.addEventListener('click', () => {
-          const path = contentPathFromItem(v);
-          try {
-            sessionStorage.setItem(`scroll:${location.pathname}`, String(window.scrollY || 0));
-            sessionStorage.setItem(`scroll:pending:${location.pathname}`, '1');
-          } catch {}
-          const base = location.href.split('#')[0];
-          const from = `${base}#scroll=${window.scrollY || 0}`;
-          if (path) {
-            try { sessionStorage.setItem('vm:from', from); } catch {}
-            saveSearchState();
-            location.href = baseUrl(path);
-          }
-        });
-
         const shareBtn = card.querySelector('.share-btn');
         const sharePanel = card.querySelector('.share-panel');
         let shareCloseTimer = null;
@@ -1629,12 +1620,13 @@
       });
 
       targetGrid.appendChild(frag);
+      bindCardNavigation(targetGrid);
       bindSoftFadeImages(targetGrid);
       restoreScrollIfNeeded();
       updateVideoSchema(items);
     }
 
-    function resetAndLoad() {
+function resetAndLoad() {
       offset = isHomeNoFilters() ? (latestItems.length || 0) : 0;
       mainRenderCount = 0;
       ended = false;
