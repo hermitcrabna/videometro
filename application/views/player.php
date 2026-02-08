@@ -47,7 +47,7 @@
     .footer-col a { color:#fff; font-weight:700; text-decoration:none; }
     @media (max-width: 900px) { .footer-inner { grid-template-columns: 1fr; } }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .wrap { flex:1; width:100%; max-width: 1200px; margin: 0 auto; padding: 0 16px 28px; box-sizing: border-box; }
+    .wrap { flex:1; width:100%; max-width: 1200px; margin: 0 auto; padding: 25px 16px 28px; box-sizing: border-box; }
     .back { display:inline-block; color: var(--muted); text-decoration:none; margin-bottom:10px; }
     .back:hover { color: #fff; background: rgba(255,255,255,.08); }
     .player { width:100%; aspect-ratio: 16/9; margin-top: 16px; background: rgba(31,39,64,0.92); border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.06); position:relative; }

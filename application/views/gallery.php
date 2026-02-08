@@ -74,7 +74,7 @@
       .hamburger { display:grid; }
       .hide-mobile { display:none; }
     }
-    .wrap { flex:1; width:100%; max-width: 1200px; margin: 0 auto; padding: 0 16px 28px; box-sizing: border-box; }
+    .wrap { flex:1; width:100%; max-width: 1200px; margin: 0 auto; padding: 25px 16px 28px; box-sizing: border-box; }
     .hero { display:flex; align-items:center; justify-content:space-between; gap: 18px; }
     .hero h1 { font-size: 42px; margin:0; letter-spacing: .2px; }
     .hero p { margin:6px 0 0 0; opacity:.8; }

@@ -318,9 +318,9 @@
             $slug = $v['slug_post'] ?? $v['slug'] ?? $v['seo_slug'] ?? '';
             $id = $v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? '';
             if ($isGallery) {
-              $path = $id ? ('gallery/' . rawurlencode((string)$id)) : ($slug ? ('gallery/' . rawurlencode((string)$slug)) : '');
+              $path = $slug ? ('gallery/' . rawurlencode((string)$slug)) : ($id ? ('gallery/' . rawurlencode((string)$id)) : '');
             } elseif ($isBlog) {
-              $path = $id ? ('blog/' . rawurlencode((string)$id)) : ($slug ? ('blog/' . rawurlencode((string)$slug)) : '');
+              $path = $slug ? ('blog/' . rawurlencode((string)$slug)) : ($id ? ('blog/' . rawurlencode((string)$id)) : '');
             } else {
               $path = $slug ? ('video/' . rawurlencode((string)$slug)) : ($id ? ('video/' . rawurlencode((string)$id)) : '');
             }
@@ -386,9 +386,9 @@
             $slug = $v['slug_post'] ?? $v['slug'] ?? $v['seo_slug'] ?? '';
             $id = $v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? '';
             if ($isGallery) {
-              $path = $id ? ('gallery/' . rawurlencode((string)$id)) : ($slug ? ('gallery/' . rawurlencode((string)$slug)) : '');
+              $path = $slug ? ('gallery/' . rawurlencode((string)$slug)) : ($id ? ('gallery/' . rawurlencode((string)$id)) : '');
             } elseif ($isBlog) {
-              $path = $id ? ('blog/' . rawurlencode((string)$id)) : ($slug ? ('blog/' . rawurlencode((string)$slug)) : '');
+              $path = $slug ? ('blog/' . rawurlencode((string)$slug)) : ($id ? ('blog/' . rawurlencode((string)$id)) : '');
             } else {
               $path = $slug ? ('video/' . rawurlencode((string)$slug)) : ($id ? ('video/' . rawurlencode((string)$id)) : '');
             }
@@ -1168,10 +1168,10 @@
       const isGallery = toFlag(v?.gallery);
       const isBlog = toFlag(v?.blog) || Boolean(v?.slug_post);
       const id = v?.post_id ?? v?.id ?? v?.video_id ?? '';
-      if (isGallery && id) return `gallery/${encodeURIComponent(String(id))}`;
       if (isGallery && slug) return `gallery/${slug}`;
-      if (isBlog && id) return `blog/${encodeURIComponent(String(id))}`;
+      if (isGallery && id) return `gallery/${encodeURIComponent(String(id))}`;
       if (isBlog && slug) return `blog/${slug}`;
+      if (isBlog && id) return `blog/${encodeURIComponent(String(id))}`;
       if (slug) return `video/${slug}`;
       if (id) return `video/${encodeURIComponent(String(id))}`;
       return '';

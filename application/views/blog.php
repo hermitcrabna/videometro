@@ -1152,10 +1152,10 @@
       let isBlog = toFlag(v?.blog) || Boolean(v?.slug_post);
       if (!isGallery && !isBlog && FORCE_BLOG) isBlog = true;
       const id = v?.post_id ?? v?.id ?? v?.video_id ?? '';
-      if (isGallery && id) return `gallery/${encodeURIComponent(String(id))}`;
       if (isGallery && slug) return `gallery/${slug}`;
-      if (isBlog && id) return `blog/${encodeURIComponent(String(id))}`;
+      if (isGallery && id) return `gallery/${encodeURIComponent(String(id))}`;
       if (isBlog && slug) return `blog/${slug}`;
+      if (isBlog && id) return `blog/${encodeURIComponent(String(id))}`;
       if (slug) return `video/${slug}`;
       if (id) return `video/${encodeURIComponent(String(id))}`;
       return '';
