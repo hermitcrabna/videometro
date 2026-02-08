@@ -111,7 +111,6 @@
       </a>
       <nav class="nav" id="navMenu">
         <a href="<?= htmlspecialchars($basePath . '/protagonisti') ?>">Protagonisti</a>
-        <a href="<?= htmlspecialchars($basePath . '/blog') ?>">Blog</a>
         <span id="navDynamic">
           <?php foreach ($categories as $c): ?>
             <?php
@@ -122,13 +121,14 @@
             <button type="button" class="nav-cat" data-cat-id="<?= vm_h($id) ?>"><?= vm_h($name) ?> <span class="caret"></span></button>
           <?php endforeach; ?>
         </span>
+        <a href="<?= htmlspecialchars($basePath . '/blog') ?>">Blog</a>
       </nav>
+
       <div class="spacer"></div>
       <a class="chip hide-mobile" href="<?= htmlspecialchars($basePath . '/blog') ?>">Torna al Blog</a>
     </div>
     <div class="mobile-nav" id="mobileNav">
       <a href="<?= htmlspecialchars($basePath . '/protagonisti') ?>">Protagonisti</a>
-      <a href="<?= htmlspecialchars($basePath . '/blog') ?>">Blog</a>
       <div id="mobileNavDynamic">
         <?php foreach ($categories as $c): ?>
           <?php
@@ -140,6 +140,7 @@
           <div class="mobile-sub"></div>
         <?php endforeach; ?>
       </div>
+      <a href="<?= htmlspecialchars($basePath . '/blog') ?>">Blog</a>
     </div>
     <div class="mega" id="megaMenu">
       <div class="mega-inner" id="megaInner"></div>

@@ -4,6 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Subcategories extends CI_Controller {
   public function index() {
     $this->load->library('vmapi');
+    $this->load->driver('cache', ['adapter' => 'file']);
 
     $azienda_id = (int)$this->input->get('azienda_id', true);
     if (!$azienda_id) $azienda_id = (int)$this->config->item('azienda_id');
@@ -13,6 +14,14 @@ class Subcategories extends CI_Controller {
       'azienda_id' => $azienda_id,
     ];
     if ($cat_id !== '') $query['cat_id'] = $cat_id;
+
+    $cache_key = 'subcategories_' . $azienda_id . '_' . ($cat_id !== '' ? $cat_id : 'all');
+    $cached = $this->cache->get($cache_key);
+    if ($cached !== false) {
+      $this->output->set_content_type('application/json; charset=utf-8');
+      $this->output->set_output($cached);
+      return;
+    }
 
     $url = $this->vmapi->api_base() . '/get_subcategory?' . http_build_query($query);
 
@@ -31,6 +40,7 @@ class Subcategories extends CI_Controller {
       return;
     }
 
+    $this->cache->save($cache_key, $res['raw'], 300);
     $this->output->set_content_type('application/json; charset=utf-8');
     $this->output->set_output($res['raw']);
   }

@@ -50,7 +50,7 @@
     .wrap { flex:1; width:100%; max-width: 1200px; margin: 0 auto; padding: 0 16px 28px; box-sizing: border-box; }
     .back { display:inline-block; color: var(--muted); text-decoration:none; margin-bottom:10px; }
     .back:hover { color: #fff; background: rgba(255,255,255,.08); }
-    .player { width:100%; aspect-ratio: 16/9; background: rgba(31,39,64,0.92); border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.06); position:relative; }
+    .player { width:100%; aspect-ratio: 16/9; margin-top: 16px; background: rgba(31,39,64,0.92); border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.06); position:relative; }
     .vm-embed { position:absolute; inset:0; }
     .vm-embed iframe { width:100%; height:100%; display:block; }
     .player.is-youtube { overflow: hidden; }

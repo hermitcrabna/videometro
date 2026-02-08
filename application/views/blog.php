@@ -203,7 +203,7 @@
     .footer-col a { color:#fff; font-weight:700; text-decoration:none; }
     @media (max-width: 900px) { .footer-inner { grid-template-columns: 1fr; } }
     
-    @media (max-width: 600px) { .socials, .social-sep { display: none !important; } }
+    @media (max-width: 768px) { .socials, .social-sep { display: none !important; } }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     @keyframes spin { to { transform:translate(-50%, -50%) rotate(360deg); } }
     .sentinel { height: 1px; }
@@ -223,7 +223,6 @@
       </a>
       <nav class="nav" id="navMenu">
         <a href="<?= htmlspecialchars($basePath . '/protagonisti') ?>">Protagonisti</a>
-        <a href="<?= htmlspecialchars($basePath . '/blog') ?>" id="navBlog" style="display:none;">Blog</a>
         <span id="navDynamic">
           <?php foreach ($categories as $c): ?>
             <?php
@@ -234,7 +233,10 @@
             <button type="button" class="nav-cat" data-cat-id="<?= vm_h($id) ?>"><?= vm_h($name) ?> <span class="caret"></span></button>
           <?php endforeach; ?>
         </span>
+        <a href="<?= htmlspecialchars($basePath . '/blog') ?>" id="navBlog" style="display:none;">Blog</a>
       </nav>
+
+
       <div class="spacer"></div>
       <div class="search" id="searchBar">
         <input id="searchInput" type="search" placeholder="Cerca video..." autocomplete="off" />
@@ -255,7 +257,6 @@
     </div>
     <div class="mobile-nav" id="mobileNav">
       <a href="<?= htmlspecialchars($basePath . '/protagonisti') ?>">Protagonisti</a>
-      <a href="<?= htmlspecialchars($basePath . '/blog') ?>" id="mobileBlog" style="display:none;">Blog</a>
       <div id="mobileNavDynamic">
         <?php foreach ($categories as $c): ?>
           <?php
@@ -267,6 +268,7 @@
           <div class="mobile-sub"></div>
         <?php endforeach; ?>
       </div>
+      <a href="<?= htmlspecialchars($basePath . '/blog') ?>" id="mobileBlog" style="display:none;">Blog</a>
     </div>
     <div class="mega" id="megaMenu">
       <div class="mega-inner" id="megaInner"></div>
@@ -900,58 +902,9 @@
     }
 
     async function loadCategories() {
-      if (navDynamic && navDynamic.children.length > 0) {
-        bindMegaMenu();
-        bindMobileSubmenus();
-        return;
-      }
-      try {
-        const res = await fetch(`${baseUrl('api/categories.php')}?azienda_id=${encodeURIComponent(aziendaId)}`, {
-          headers: { 'Accept': 'application/json' },
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const items = Array.isArray(data) ? data : (data.data ?? []);
-        if (!items.length) return;
-
-        navDynamic.innerHTML = '';
-        mobileNavDynamic.innerHTML = '';
-
-        items.forEach(c => {
-          const name = c.categoria ?? c.category ?? '';
-          const id = c.cat_id ?? c.id ?? '';
-          if (!name || !id) return;
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'nav-cat';
-          btn.dataset.catId = id;
-          btn.textContent = name + ' ';
-          const caret = document.createElement('span');
-          caret.className = 'caret';
-          caret.textContent = '';
-          btn.appendChild(caret);
-          navDynamic.appendChild(btn);
-
-          const btnMobile = document.createElement('button');
-          btnMobile.type = 'button';
-          btnMobile.className = 'mobile-cat';
-          btnMobile.dataset.catId = id;
-          btnMobile.textContent = name;
-          const caretMobile = document.createElement('span');
-          caretMobile.className = 'caret';
-          caretMobile.textContent = '';
-          btnMobile.appendChild(caretMobile);
-          const subWrap = document.createElement('div');
-          subWrap.className = 'mobile-sub';
-          mobileNavDynamic.appendChild(btnMobile);
-          mobileNavDynamic.appendChild(subWrap);
-        });
-
-        bindMegaMenu();
-        bindMobileSubmenus();
-      } catch (e) {
-        console.error(e);
-      }
+      if (!navDynamic) return;
+      bindMegaMenu();
+      bindMobileSubmenus();
     }
 
     const megaMenu = document.getElementById('megaMenu');
