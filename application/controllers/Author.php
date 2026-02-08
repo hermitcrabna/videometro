@@ -75,8 +75,22 @@ class Author extends CI_Controller {
     $siteUrl = vm_site_url();
     $basePath = vm_base_path();
     $canonical = $siteUrl . $basePath . '/protagonisti/' . ($authorSlug ?: '');
-    $title = $authorName ? ('VideoMetro – ' . $authorName) : 'VideoMetro – Autore';
-    $description = $authorName ? ('Video di ' . $authorName . ' su VideoMetro.') : "Contenuti dell'autore su VideoMetro.";
+    $aziendaRaw = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_azienda?' . http_build_query([
+      'azienda_id' => $aziendaId,
+    ]));
+    if (is_array($aziendaRaw) && array_key_exists('', $aziendaRaw) && is_array($aziendaRaw[''])) {
+      $azienda = $aziendaRaw[''];
+    } elseif (is_array($aziendaRaw) && isset($aziendaRaw['data']) && is_array($aziendaRaw['data'])) {
+      $azienda = $aziendaRaw['data'];
+    } elseif (is_array($aziendaRaw)) {
+      $azienda = $aziendaRaw;
+    } else {
+      $azienda = [];
+    }
+    $aziendaName = trim((string)($azienda['denominazione'] ?? $azienda['name'] ?? 'VideoMetro'));
+
+    $title = $authorName ? ($aziendaName . ' - ' . $authorName) : ($aziendaName . ' - protagonista');
+    $description = $authorName ? ('Video di ' . $authorName . ' su ' . $aziendaName . '.') : ("Contenuti dell'autore su " . $aziendaName . '.');
     $robots = ($searchTerm !== '') ? 'noindex, follow' : 'index, follow';
 
     $data = [

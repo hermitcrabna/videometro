@@ -26,8 +26,22 @@ class Authors extends CI_Controller {
     $siteUrl = vm_site_url();
     $basePath = vm_base_path();
     $canonical = $siteUrl . $basePath . '/protagonisti';
-    $title = 'VideoMetro – Protagonisti';
-    $description = 'I protagonisti di VideoMetro.';
+    $aziendaRaw = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_azienda?' . http_build_query([
+      'azienda_id' => $aziendaId,
+    ]));
+    if (is_array($aziendaRaw) && array_key_exists('', $aziendaRaw) && is_array($aziendaRaw[''])) {
+      $azienda = $aziendaRaw[''];
+    } elseif (is_array($aziendaRaw) && isset($aziendaRaw['data']) && is_array($aziendaRaw['data'])) {
+      $azienda = $aziendaRaw['data'];
+    } elseif (is_array($aziendaRaw)) {
+      $azienda = $aziendaRaw;
+    } else {
+      $azienda = [];
+    }
+    $aziendaName = trim((string)($azienda['denominazione'] ?? $azienda['name'] ?? 'VideoMetro'));
+
+    $title = $aziendaName . ' - i nostri protagonisti';
+    $description = 'I protagonisti di ' . $aziendaName . '.';
     $robots = ($searchTerm !== '') ? 'noindex, follow' : 'index, follow';
 
     $data = [
