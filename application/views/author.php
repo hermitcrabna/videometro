@@ -182,7 +182,9 @@
     .footer-col { color: rgba(255,255,255,.82); line-height: 1.6; font-size: 14px; }
     .footer-col a { color:#fff; font-weight:700; text-decoration:none; }
     @media (max-width: 900px) { .footer-inner { grid-template-columns: 1fr; } }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    
+    @media (max-width: 600px) { .socials, .social-sep { display: none !important; } }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     @keyframes spin { to { transform:translate(-50%, -50%) rotate(360deg); } }
     .sentinel { height: 1px; }
     .btn { padding:10px 14px; border-radius:10px; border:1px solid #333; background:#111; color:#fff; cursor:pointer; }

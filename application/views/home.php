@@ -214,7 +214,9 @@
     .s-avatar-mini { width:28px; height:28px; border-radius:999px; background: #3a4563; }
     .s-pill { height:9px; width:64px; border-radius:999px; background:#3a4563; }
     .s-spinner { position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); width:26px; height:26px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation: spin 0.8s linear infinite; }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    
+    @media (max-width: 600px) { .socials, .social-sep { display: none !important; } }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     @keyframes spin { to { transform:translate(-50%, -50%) rotate(360deg); } }
     .sentinel { height: 1px; }
     .btn { padding:10px 14px; border-radius:10px; border:1px solid #333; background:#111; color:#fff; cursor:pointer; }
