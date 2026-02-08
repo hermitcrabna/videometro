@@ -65,6 +65,8 @@ $route['video/categoria/(:any)'] = 'home/index/$1';
 $route['video/(:any)'] = 'player/index/$1';
 $route['sitemap.xml'] = 'sitemap/index';
 $route['robots.txt'] = 'robots/index';
+$route['privacy'] = 'privacy';
+$route['cookie'] = 'cookie';
 
 // API proxies (support .php and clean URLs)
 $route['api/videos.php'] = 'api/videos/index';
