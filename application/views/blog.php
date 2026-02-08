@@ -918,6 +918,7 @@
     }
     function closeMega() {
       megaCloseTimer = setTimeout(() => {
+        if (navMenu.matches(':hover') || megaMenu.matches(':hover')) return;
         megaMenu.classList.remove('open');
         megaInner.innerHTML = '';
       }, 120);
@@ -1024,9 +1025,15 @@
           loadSubcategories(btn.dataset.catId);
         });
       });
-      navMenu.addEventListener('mouseleave', closeMega);
+      navMenu.addEventListener('mouseleave', (e) => {
+        if (e.relatedTarget && megaMenu.contains(e.relatedTarget)) return;
+        closeMega();
+      });
       megaMenu.addEventListener('mouseenter', openMega);
-      megaMenu.addEventListener('mouseleave', closeMega);
+      megaMenu.addEventListener('mouseleave', (e) => {
+        if (e.relatedTarget && navMenu.contains(e.relatedTarget)) return;
+        closeMega();
+      });
     }
 
     async function loadSubcategoriesInto(container, catId) {

@@ -37,7 +37,7 @@
     .nav { display:flex; align-items:center; gap: 10px; color: var(--muted); font-size: 14px; font-family: 'Montserrat', system-ui, Arial, sans-serif; letter-spacing: .2px; }
         .nav > a, .nav > span, .nav > button, .nav .nav-cat { color: inherit; text-decoration: none; cursor: pointer; padding: 8px 12px; border-radius: 999px; display:inline-flex; align-items:center; gap:6px; transition: background .2s ease, color .2s ease; background: transparent; border: none; font: inherit; }
     .nav .caret { pointer-events: none; pointer-events: none; display:inline-block; width: 6px; height: 6px; position: relative; font-size: 0; line-height: 0; transform: translateY(1px); }
-.nav > a:hover, .nav > span:hover, .nav > button:hover, .nav .nav-cat:hover { color: #fff; background: rgba(255,255,255,.08); }
+.nav > a:hover, .nav > button:hover, .nav .nav-cat:hover { color: #fff; background: rgba(255,255,255,.08); }
     .nav .nav-cat { padding-right: 16px; }
     .mega { position:absolute; left:0; right:0; top:100%; background: rgba(24,30,49,0.98); border-bottom: 1px solid var(--bar-border); display:none; z-index: 40; }
     .mega.open { display:block; }
@@ -103,48 +103,12 @@
 <body>
   <header class="topbar">
     <div class="topbar-inner">
-      <button class="hamburger" id="mobileToggle" aria-label="Menu">
-        <span></span>
-      </button>
       <a class="brand loading" id="brandLogo" href="<?= htmlspecialchars($baseHref) ?>">
         <span class="brand-skeleton" id="brandSkeleton"></span>
         <span class="brand-text" id="brandText"><?= htmlspecialchars($aziendaName ?? 'videometro.tv') ?></span>
       </a>
-      <nav class="nav" id="navMenu">
-        <a href="<?= htmlspecialchars($basePath . '/protagonisti') ?>">Protagonisti</a>
-        <span id="navDynamic">
-          <?php foreach ($categories as $c): ?>
-            <?php
-              $name = $c['categoria'] ?? $c['category'] ?? '';
-              $id = $c['cat_id'] ?? $c['id'] ?? '';
-              if (!$name || !$id) continue;
-            ?>
-            <button type="button" class="nav-cat" data-cat-id="<?= vm_h($id) ?>"><?= vm_h($name) ?> <span class="caret"></span></button>
-          <?php endforeach; ?>
-        </span>
-        <a href="<?= htmlspecialchars($basePath . '/blog') ?>">Blog</a>
-      </nav>
-
       <div class="spacer"></div>
       <a class="chip hide-mobile" href="<?= htmlspecialchars($basePath . '/blog') ?>">Torna al Blog</a>
-    </div>
-    <div class="mobile-nav" id="mobileNav">
-      <a href="<?= htmlspecialchars($basePath . '/protagonisti') ?>">Protagonisti</a>
-      <div id="mobileNavDynamic">
-        <?php foreach ($categories as $c): ?>
-          <?php
-            $name = $c['categoria'] ?? $c['category'] ?? '';
-            $id = $c['cat_id'] ?? $c['id'] ?? '';
-            if (!$name || !$id) continue;
-          ?>
-          <button type="button" class="mobile-cat" data-cat-id="<?= vm_h($id) ?>"><?= vm_h($name) ?> <span class="caret"></span></button>
-          <div class="mobile-sub"></div>
-        <?php endforeach; ?>
-      </div>
-      <a href="<?= htmlspecialchars($basePath . '/blog') ?>">Blog</a>
-    </div>
-    <div class="mega" id="megaMenu">
-      <div class="mega-inner" id="megaInner"></div>
     </div>
   </header>
 
@@ -159,7 +123,7 @@
     <section class="hero">
       <div>
         <h1><?= vm_h($title) ?></h1>
-        <?php if ($summary): ?><p><?= vm_h($summary) ?></p><?php endif; ?>
+        <?php if ($summary): ?><div class="summary"><?= $summary ?></div><?php endif; ?>
       </div>
     </section>
 
@@ -308,8 +272,20 @@
         if (brandLogo) brandLogo.classList.remove('loading');
       }
     }
-    function openMega() { megaMenu.classList.add('open'); }
-    function closeMega() { megaMenu.classList.remove('open'); megaInner.innerHTML = ''; }
+    let megaCloseTimer = null;
+    function openMega() {
+      megaMenu.classList.add('open');
+      if (megaCloseTimer) clearTimeout(megaCloseTimer);
+    }
+    function closeMega() {
+      if (megaCloseTimer) clearTimeout(megaCloseTimer);
+      megaCloseTimer = setTimeout(() => {
+        if (!navMenu || !megaMenu) return;
+        if (navMenu.matches(':hover') || megaMenu.matches(':hover')) return;
+        megaMenu.classList.remove('open');
+        megaInner.innerHTML = '';
+      }, 120);
+    }
     function renderMegaSkeleton(count = 8) {
       let html = '<div class="mega-skeletons">';
       for (let i = 0; i < count; i += 1) html += '<span class="mega-pill"></span>';
@@ -352,14 +328,20 @@
       }
     }
     function bindMegaMenu() {
-      if (!navDynamic) return;
+      if (!navDynamic || !navMenu || !megaMenu || !megaInner) return;
       navDynamic.querySelectorAll('.nav-cat').forEach(btn => {
         btn.addEventListener('mouseenter', () => { openMega(); loadSubcategories(btn.dataset.catId); });
         btn.addEventListener('focus', () => { openMega(); loadSubcategories(btn.dataset.catId); });
       });
-      navMenu.addEventListener('mouseleave', closeMega);
+      navMenu.addEventListener('mouseleave', (e) => {
+        if (e.relatedTarget && megaMenu.contains(e.relatedTarget)) return;
+        closeMega();
+      });
       megaMenu.addEventListener('mouseenter', openMega);
-      megaMenu.addEventListener('mouseleave', closeMega);
+      megaMenu.addEventListener('mouseleave', (e) => {
+        if (e.relatedTarget && navMenu.contains(e.relatedTarget)) return;
+        closeMega();
+      });
       if (mobileNavDynamic) {
         mobileNavDynamic.querySelectorAll('.mobile-cat').forEach((btn) => {
           const sub = btn.nextElementSibling;
@@ -401,7 +383,9 @@
     lightboxClose.addEventListener('click', () => lightbox.classList.remove('open'));
     lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.classList.remove('open'); });
 
-    mobileToggle.addEventListener('click', () => mobileNav.classList.toggle('open'));
+    if (mobileToggle && mobileNav) {
+      mobileToggle.addEventListener('click', () => mobileNav.classList.toggle('open'));
+    }
     loadAzienda();
     bindMegaMenu();
   </script>

@@ -121,7 +121,7 @@
       .searching-mobile .brand,
       .searching-mobile .hamburger { display:none; }
     }
-    .wrap { flex:1; width:100%; max-width: 1200px; margin: 0 auto; padding: 0 16px 28px; box-sizing: border-box; }
+    .wrap { flex:1; width:100%; max-width: 1200px; margin: 25px auto 0; padding: 0 16px 28px; box-sizing: border-box; }
     .hero { display:flex; align-items:center; gap: 18px; margin-bottom: 18px; }
     .hero-content { display:flex; align-items:center; gap: 18px; width: 100%; }
     .hero-left { display:flex; align-items:center; gap: 18px; }

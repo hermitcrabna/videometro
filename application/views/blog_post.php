@@ -77,8 +77,8 @@
     }
     .wrap { flex:1; width:100%; max-width: 1200px; margin: 0 auto; padding: 25px 16px 28px; box-sizing: border-box; }
     .hero { display:grid; grid-template-columns: 1.1fr 1fr; gap: 20px; align-items: stretch; }
-    .hero-media { border-radius:18px; overflow:hidden; border:1px solid rgba(255,255,255,.08); background: #1a2034; }
-    .hero-media img { width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition: opacity .5s ease; }
+    .hero-media { border-radius:18px; border:1px solid rgba(255,255,255,.08); background: transparent; display:flex; align-items:flex-start; justify-content:center; }
+    .hero-media img { width:100%; height:auto; max-height:100%; object-fit:contain; display:block; opacity:0; transition: opacity .5s ease; border-radius:18px; }
     .hero-media img.is-loaded { opacity:1; }
     .hero-body { min-height:100vh; display:flex; flex-direction:column; display:flex; flex-direction:column; gap: 14px; padding: 6px 4px; }
     .eyebrow { display:inline-flex; align-items:center; gap:8px; font-size: 12px; color: var(--muted); letter-spacing:.3px; text-transform: uppercase; }
@@ -91,6 +91,11 @@
     .chip { background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:#fff; padding:4px 10px; border-radius:999px; font-size:12px; text-decoration:none; }
     @media (max-width: 980px) {
       .hero { grid-template-columns: 1fr; }
+    }
+    @media (min-width: 981px) {
+      .hero { align-items: flex-start; }
+      .hero-media { position: sticky; top: 90px; height: auto; max-height: calc(100vh - 120px); align-self: start; }
+      .hero-body { max-height: calc(100vh - 120px); overflow-y: auto; }
     }
     
     .site-footer { margin-top: 46px; padding: 28px 16px 40px; background: #0d1018; border-top: 1px solid rgba(255,255,255,.06); }
@@ -106,48 +111,12 @@
 <body>
   <header class="topbar">
     <div class="topbar-inner">
-      <button class="hamburger" id="mobileToggle" aria-label="Menu">
-        <span></span>
-      </button>
       <a class="brand loading" id="brandLogo" href="<?= htmlspecialchars($baseHref) ?>">
         <span class="brand-skeleton" id="brandSkeleton"></span>
         <span class="brand-text" id="brandText"><?= htmlspecialchars($aziendaName ?? 'videometro.tv') ?></span>
       </a>
-      <nav class="nav" id="navMenu">
-        <a href="<?= htmlspecialchars($basePath . '/protagonisti') ?>">Protagonisti</a>
-        <span id="navDynamic">
-          <?php foreach ($categories as $c): ?>
-            <?php
-              $name = $c['categoria'] ?? $c['category'] ?? '';
-              $id = $c['cat_id'] ?? $c['id'] ?? '';
-              if (!$name || !$id) continue;
-            ?>
-            <button type="button" class="nav-cat" data-cat-id="<?= vm_h($id) ?>"><?= vm_h($name) ?> <span class="caret"></span></button>
-          <?php endforeach; ?>
-        </span>
-        <a href="<?= htmlspecialchars($basePath . '/blog') ?>">Blog</a>
-      </nav>
-
       <div class="spacer"></div>
       <a class="chip hide-mobile" href="<?= htmlspecialchars($basePath . '/blog') ?>">Torna al Blog</a>
-    </div>
-    <div class="mobile-nav" id="mobileNav">
-      <a href="<?= htmlspecialchars($basePath . '/protagonisti') ?>">Protagonisti</a>
-      <div id="mobileNavDynamic">
-        <?php foreach ($categories as $c): ?>
-          <?php
-            $name = $c['categoria'] ?? $c['category'] ?? '';
-            $id = $c['cat_id'] ?? $c['id'] ?? '';
-            if (!$name || !$id) continue;
-          ?>
-          <button type="button" class="mobile-cat" data-cat-id="<?= vm_h($id) ?>"><?= vm_h($name) ?> <span class="caret"></span></button>
-          <div class="mobile-sub"></div>
-        <?php endforeach; ?>
-      </div>
-      <a href="<?= htmlspecialchars($basePath . '/blog') ?>">Blog</a>
-    </div>
-    <div class="mega" id="megaMenu">
-      <div class="mega-inner" id="megaInner"></div>
     </div>
   </header>
 
@@ -384,7 +353,7 @@
       }
     }
     function bindMegaMenu() {
-      if (!navDynamic) return;
+      if (!navDynamic || !navMenu || !megaMenu || !megaInner) return;
       navDynamic.querySelectorAll('.nav-cat').forEach(btn => {
         btn.addEventListener('mouseenter', () => { openMega(); loadSubcategories(btn.dataset.catId); });
         btn.addEventListener('focus', () => { openMega(); loadSubcategories(btn.dataset.catId); });
@@ -426,7 +395,9 @@
       if (heroImg.complete) heroImg.classList.add('is-loaded');
       heroImg.addEventListener('load', () => heroImg.classList.add('is-loaded'));
     }
-    mobileToggle.addEventListener('click', () => mobileNav.classList.toggle('open'));
+    if (mobileToggle && mobileNav) {
+      mobileToggle.addEventListener('click', () => mobileNav.classList.toggle('open'));
+    }
     loadAzienda();
     bindMegaMenu();
   </script>
