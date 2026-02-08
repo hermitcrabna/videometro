@@ -62,9 +62,10 @@ class Author extends CI_Controller {
         'azienda_id' => $aziendaId,
         'limit' => $limit,
         'offset' => 0,
+        'author_id' => $authorId,
       ];
       if ($searchTerm !== '') $query['search_term'] = $searchTerm;
-      $authorItems = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_video_by_author_id/' . rawurlencode((string)$authorId) . '?' . http_build_query($query)) ?? [];
+      $authorItems = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_video_by_author_id?' . http_build_query($query)) ?? [];
     }
 
     $categoriesRaw = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_category?' . http_build_query([

@@ -286,7 +286,6 @@
           $thumb = $v['image'] ?? $v['thumbnail'] ?? $v['thumb'] ?? $v['poster'] ?? '';
           $rawSummary = (string)($v['summary'] ?? $v['seo-description'] ?? '');
           $summary = strip_tags($rawSummary);
-          $summaryHasHtml = ($rawSummary !== '' && strip_tags($rawSummary) !== $rawSummary);
           $author = is_array($v['authors'] ?? null) && !empty($v['authors']) ? $v['authors'][0] : null;
           $aImg = is_array($author) ? ($author['image'] ?? '') : '';
           $aName = is_array($author) ? ($author['name'] ?? '') : '';
@@ -309,9 +308,9 @@
           $galleryVal = $v['gallery'] ?? null;
           $hasTypeFlags = !is_null($blogVal) || !is_null($galleryVal);
           $isGallery = (string)($galleryVal ?? '0') === '1' || $type === 'gallery';
-          $isBlog = (string)($blogVal ?? '0') === '1' || !empty($v['slug_post']) || $type === 'blog';
+          $isBlog = (string)($blogVal ?? '0') === '1' || $type === 'blog';
           // If flags exist and neither is true, treat as video (keep default).
-          if (!$hasTypeFlags && !$isBlog && !$isGallery && $summaryHasHtml) $isBlog = true;
+          // If flags are missing, default to video (no blog/gallery).
           $slug = $v['slug_post'] ?? $v['slug'] ?? $v['seo_slug'] ?? '';
           $id = $v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? '';
           if ($isGallery) {
@@ -417,7 +416,7 @@
     const pathSlug = rawSegment ? rawSegment.replace(/^\d+-?/, '') : '';
 
     const AUTHOR = window.__AUTHOR__ || {};
-    const authorId = AUTHOR.id || params.get('id') || pathId || '';
+    let authorId = AUTHOR.id || params.get('id') || pathId || '';
     const authorName = AUTHOR.name || params.get('name') || (pathSlug ? pathSlug.replace(/-/g, ' ') : 'Autore');
     const authorImg = AUTHOR.image || params.get('image') || '';
     const authorCount = AUTHOR.num_video || params.get('num_video') || '';
@@ -869,15 +868,8 @@
       const type = String(v?.type ?? v?.tipo ?? v?.content_type ?? '').toLowerCase();
       const blogVal = v?.blog ?? null;
       const galleryVal = v?.gallery ?? null;
-      const hasTypeFlags = blogVal !== null || galleryVal !== null;
       const isGallery = toFlag(galleryVal) || type === 'gallery';
-      let isBlog = toFlag(blogVal) || Boolean(v?.slug_post) || type === 'blog';
-      // If flags exist and neither is true, treat as video (keep default).
-      if (!hasTypeFlags && !isBlog && !isGallery) {
-        const rawSummary = String(v?.summary ?? v?.['seo-description'] ?? '');
-        if (rawSummary && rawSummary !== stripHtml(rawSummary)) isBlog = true;
-        if (String(v?.summary_html ?? v?.summaryHtml ?? '') === '1') isBlog = true;
-      }
+      const isBlog = toFlag(blogVal) || type === 'blog';
       const id = v?.post_id ?? v?.id ?? v?.video_id ?? '';
       if (isGallery && slug) return `gallery/${slug}`;
       if (isGallery && id) return `gallery/${encodeURIComponent(String(id))}`;
@@ -897,15 +889,8 @@
       const type = String(v?.type ?? v?.tipo ?? v?.content_type ?? '').toLowerCase();
       const blogVal = v?.blog ?? null;
       const galleryVal = v?.gallery ?? null;
-      const hasTypeFlags = blogVal !== null || galleryVal !== null;
       const isGallery = toFlag(galleryVal) || type === 'gallery';
-      let isBlog = toFlag(blogVal) || Boolean(v?.slug_post) || type === 'blog';
-      // If flags exist and neither is true, treat as video (keep default).
-      if (!hasTypeFlags && !isBlog && !isGallery) {
-        const rawSummary = String(v?.summary ?? v?.['seo-description'] ?? '');
-        if (rawSummary && rawSummary !== stripHtml(rawSummary)) isBlog = true;
-        if (String(v?.summary_html ?? v?.summaryHtml ?? '') === '1') isBlog = true;
-      }
+      const isBlog = toFlag(blogVal) || type === 'blog';
       if (isBlog || isGallery) {
         return [
           isBlog ? typeIcon('blog', 'Blog', ICON_BLOG) : '',
@@ -1135,6 +1120,15 @@
       updateVideoSchema(items);
     }
 
+    function syncAuthorIdFromItems(items) {
+      if (authorId) return;
+      if (!Array.isArray(items) || !items.length) return;
+      const first = items.find(Boolean);
+      const author = Array.isArray(first?.authors) && first.authors.length ? first.authors[0] : null;
+      const derivedId = author?.id || author?.author_id || '';
+      if (derivedId) authorId = String(derivedId);
+    }
+
     function applySSR() {
       if (!SSR?.items || !Array.isArray(SSR.items)) return false;
       grid.innerHTML = '';
@@ -1143,6 +1137,7 @@
       decorateCardOverlays(grid);
       offset = typeof SSR.offset === 'number' ? SSR.offset : SSR.items.length;
       ended = SSR.items.length < (SSR.limit || limit);
+      syncAuthorIdFromItems(SSR.items);
       return true;
     }
 
@@ -1177,7 +1172,6 @@
         const eff = effectiveSearchTerm();
         if (eff) qs.set('search_term', eff);
         if (authorId) qs.set('author_id', authorId);
-
         const url = `${baseUrl('api/author_videos.php')}?${qs.toString()}`;
         const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
 
@@ -1193,6 +1187,7 @@
         if (!items) throw new Error('Risposta non valida: array non trovato');
 
         renderItems(items);
+        syncAuthorIdFromItems(items);
 
         if (items.length === 0 || items.length < limit) {
           ended = true;

@@ -26,13 +26,17 @@ class Author_videos extends CI_Controller {
     $offset = $this->input->get('offset', true);
     $offset = $offset !== null ? max(0, (int)$offset) : null;
 
+    $search_term = trim((string)$this->input->get('search_term', true));
+
     $query = [
       'azienda_id' => $azienda_id,
+      'author_id' => $author_id,
       'limit' => $limit,
     ];
     if ($offset !== null) $query['offset'] = $offset;
+    if ($search_term !== '') $query['search_term'] = $search_term;
 
-    $url = $this->vmapi->api_base() . '/get_video_by_author_id/' . rawurlencode($author_id) . '?' . http_build_query($query);
+    $url = $this->vmapi->api_base() . '/get_video_by_author_id?' . http_build_query($query);
     $res = $this->vmapi->fetch_raw($url);
 
     if ($res['raw'] === false || $res['http'] < 200 || $res['http'] >= 300) {
