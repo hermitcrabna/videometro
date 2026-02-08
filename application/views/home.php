@@ -80,13 +80,21 @@
     .socials a { width: 32px; height: 32px; border-radius: 100%; border:1px solid rgba(255,255,255,.12); display:grid; place-items:center; color:#fff; text-decoration:none; background: rgba(255,255,255,.04); }
     .socials a:hover { background: rgba(255,255,255,.1); }
     .socials svg { width:16px; height:16px; display:block; }
-    .site-footer { margin-top: 46px; padding: 28px 16px 40px; background: #0d1018; border-top: 1px solid rgba(255,255,255,.06); }
-    .footer-inner { max-width: 1200px; margin: 0 auto; display:grid; grid-template-columns: 1fr 1fr; gap: 26px; }
-    .footer-brand { font-weight: 700; font-size: 22px; letter-spacing: .2px; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; }
+    .site-footer { margin-top: 46px; padding: 22px 16px 32px; background: #0d1018; border-top: 1px solid rgba(255,255,255,.06); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display:flex; flex-direction:column; gap: 18px; }
+    .footer-top { display:flex; align-items:center; justify-content:space-between; gap: 16px; }
+    .footer-links { display:flex; align-items:center; gap: 18px; flex-wrap:wrap; }
+    .footer-links a { color:#fff; text-decoration:none; font-weight:600; font-size:14px; opacity:.9; }
+    .footer-links a:hover { opacity:1; }
+    .footer-bottom { display:grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+    .footer-brand { font-weight: 700; font-size: 20px; letter-spacing: .2px; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; }
     .footer-brand .dot { color: var(--accent); font-size: 1.05em; margin-left: 1px; }
     .footer-col { color: rgba(255,255,255,.82); line-height: 1.6; font-size: 14px; }
     .footer-col a { color:#fff; font-weight:700; text-decoration:none; }
-    @media (max-width: 900px) { .footer-inner { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) {
+      .footer-top { flex-direction:column; align-items:flex-start; }
+      .footer-bottom { grid-template-columns: 1fr; }
+    }
     .hamburger { width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #fff; display:none; place-items:center; cursor:pointer; }
     .hamburger span { width: 18px; height: 2px; background: currentColor; display:block; position: relative; }
     .hamburger span::before, .hamburger span::after { content:""; position:absolute; left:0; width: 18px; height: 2px; background: currentColor; }
@@ -431,11 +439,17 @@
 
   <footer class="site-footer" id="siteFooter" style="display:none;">
     <div class="footer-inner">
-      <div class="footer-col">
+      <div class="footer-top">
         <div class="footer-brand" id="footerLogo">videometro<span class="dot">.</span>tv</div>
-        <div id="footerLeft"></div>
+        <div class="footer-links">
+          <a href="<?= htmlspecialchars($basePath . '/privacy') ?>">Privacy Policy</a>
+          <a href="<?= htmlspecialchars($basePath . '/cookie') ?>">Cookie Policy</a>
+        </div>
       </div>
-      <div class="footer-col" id="footerRight"></div>
+      <div class="footer-bottom" id="footerBottom">
+        <div class="footer-col" id="footerLeft"></div>
+        <div class="footer-col" id="footerRight"></div>
+      </div>
     </div>
   </footer>
 
@@ -898,16 +912,17 @@
       const footerLogoEl = document.getElementById('footerLogo');
       const footerLeftEl = document.getElementById('footerLeft');
       const footerRightEl = document.getElementById('footerRight');
+      const footerBottomEl = document.getElementById('footerBottom');
       if (!siteFooterEl || !footerLeftEl || !footerRightEl) {
         setTimeout(() => renderFooter(a), 0);
         return;
       }
       const left = (a && a.footer_left) ? String(a.footer_left).trim() : '';
       const right = (a && a.footer_right) ? String(a.footer_right).trim() : '';
-      if (!left && !right) { siteFooterEl.style.display = 'none'; return; }
       footerLeftEl.innerHTML = left;
       footerRightEl.innerHTML = right;
       if (footerLogoEl && brandText) footerLogoEl.innerHTML = brandText.innerHTML;
+      if (footerBottomEl) footerBottomEl.style.display = (!left && !right) ? 'none' : 'grid';
       siteFooterEl.style.display = 'block';
     }
 
