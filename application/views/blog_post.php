@@ -350,11 +350,12 @@
         }
         items.forEach(s => {
           const name = s.sub_categoria ?? s.subcategory ?? '';
+          const sid = s.subcat_id ?? s.id ?? '';
           const featured = String(s.featured ?? '0') === '1';
-          if (!name) return;
-          const slug = slugify(name);
+          if (!name || !sid) return;
+          const slug = s.slug ?? slugify(name);
           const link = document.createElement('a');
-          link.href = baseUrl(`video/categoria/${slug}`);
+          link.href = `${baseUrl(`video/categoria/${slug}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`;
           link.textContent = name;
           if (featured) {
             const badge = document.createElement('span');
@@ -395,10 +396,11 @@
             sub.innerHTML = '';
             items.forEach(s => {
               const name = s.sub_categoria ?? s.subcategory ?? '';
-              if (!name) return;
-              const slug = slugify(name);
+              const sid = s.subcat_id ?? s.id ?? '';
+              if (!name || !sid) return;
+              const slug = s.slug ?? slugify(name);
               const a = document.createElement('a');
-              a.href = baseUrl(`video/categoria/${slug}`);
+              a.href = `${baseUrl(`video/categoria/${slug}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`;
               a.textContent = name;
               sub.appendChild(a);
             });

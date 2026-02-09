@@ -351,7 +351,7 @@
                 <?php endif; ?>
               </div>
               <?php if ($subcatName): ?>
-                <a class="tag" href="<?= vm_h($basePath . '/video/categoria/' . vm_slugify($subcatName)) ?>"><?= vm_h($subcatName) ?></a>
+                <a class="tag" href="<?= vm_h($basePath . '/video/categoria/' . vm_slugify($subcatName) . '?cat_id=' . urlencode((string)$catId) . '&subcat_id=' . urlencode((string)$subcatId)) ?>"><?= vm_h($subcatName) ?></a>
               <?php endif; ?>
             </div>
           </div>
@@ -419,7 +419,7 @@
                 <?php endif; ?>
               </div>
               <?php if ($subcatName): ?>
-                <a class="tag" href="<?= vm_h($basePath . '/video/categoria/' . vm_slugify($subcatName)) ?>"><?= vm_h($subcatName) ?></a>
+                <a class="tag" href="<?= vm_h($basePath . '/video/categoria/' . vm_slugify($subcatName) . '?cat_id=' . urlencode((string)$catId) . '&subcat_id=' . urlencode((string)$subcatId)) ?>"><?= vm_h($subcatName) ?></a>
               <?php endif; ?>
             </div>
           </div>
@@ -1008,7 +1008,8 @@
           if (!name || !sid) return;
           subcatNameById.set(String(sid), String(name));
           const link = document.createElement('a');
-          link.href = baseUrl(`video/categoria/${slugify(name)}`);
+          const slug = s.slug ?? slugify(name);
+          link.href = `${baseUrl(`video/categoria/${slug}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`;
           link.textContent = name;
           if (featured) {
             const badge = document.createElement('span');
@@ -1107,7 +1108,8 @@
           const featured = String(s.featured ?? '0') === '1';
           if (!name || !sid) return;
           const link = document.createElement('a');
-          link.href = baseUrl(`video/categoria/${slugify(name)}`);
+          const slug = s.slug ?? slugify(name);
+          link.href = `${baseUrl(`video/categoria/${slug}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`;
           link.textContent = name;
           if (featured) {
             const badge = document.createElement('span');
@@ -1304,7 +1306,7 @@
               ${authorImg && authorHref ? `<a href="${authorHref}"><img src="${escapeHtml(authorImg)}" alt="" loading="lazy" decoding="async"></a>` : ''}
               ${authorName ? `<div class="author-tooltip">${escapeHtml(authorName)}${authorCount ? ` · ${escapeHtml(authorCount)} video` : ''}</div>` : ''}
             </div>
-            ${subcatName ? `<a class="tag" href="${baseUrl(`video/categoria/${slugify(subcatName)}`)}">${escapeHtml(subcatName)}</a>` : ''}
+            ${subcatName ? `<a class="tag" href="${baseUrl(`video/categoria/${slugify(subcatName)}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(subcatId)}">${escapeHtml(subcatName)}</a>` : ''}
             <div class="share-wrap">
               <button class="share-btn" aria-label="Condividi">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1575,7 +1577,7 @@
               ${authorImg && authorHref ? `<a href="${authorHref}"><img src="${escapeHtml(authorImg)}" alt="" loading="lazy" decoding="async"></a>` : ''}
               ${authorName ? `<div class="author-tooltip">${escapeHtml(authorName)}${authorCount ? ` · ${escapeHtml(authorCount)} video` : ''}</div>` : ''}
             </div>
-            ${subcatName ? `<a class="tag" href="${baseUrl(`video/categoria/${slugify(subcatName)}`)}">${escapeHtml(subcatName)}</a>` : ''}
+            ${subcatName ? `<a class="tag" href="${baseUrl(`video/categoria/${slugify(subcatName)}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(subcatId)}">${escapeHtml(subcatName)}</a>` : ''}
             <div class="share-wrap">
               <button class="share-btn" aria-label="Condividi">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
