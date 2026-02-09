@@ -1153,6 +1153,11 @@
       }
       return p;
     }
+    function authorPathFrom(authorSlug) {
+      const slug = String(authorSlug ?? '').trim();
+      if (slug) return `protagonisti/${slug}`;
+      return '';
+    }
     function contentPathFromItem(v) {
       const slug = normalizeSlug(v?.slug_post ?? v?.slug ?? v?.slug_video ?? v?.seo_slug ?? v?.url ?? v?.link ?? '');
       const isGallery = toFlag(v?.gallery);
@@ -1252,7 +1257,8 @@
         const authorCount = author?.num_video ?? '';
         const authorId = author?.id ?? '';
         const authorSlug = author?.slug ?? slugify(authorName);
-        const authorHref = authorSlug ? baseUrl(`protagonisti/${authorSlug}`) : '';
+        const authorPath = authorPathFrom(authorSlug);
+        const authorHref = authorPath ? baseUrl(authorPath) : '';
         const cat = Array.isArray(v.cat) && v.cat.length ? v.cat[0] : null;
         const subcatName = cat?.subcategory ?? '';
         const catId = cat?.cat_id ?? v.cat_id ?? '';
@@ -1489,7 +1495,8 @@
         const authorCount = author?.num_video ?? '';
         const authorId = author?.id ?? '';
         const authorSlug = author?.slug ?? slugify(authorName);
-        const authorHref = authorSlug ? baseUrl(`protagonisti/${authorSlug}`) : '';
+        const authorPath = authorPathFrom(authorSlug);
+        const authorHref = authorPath ? baseUrl(authorPath) : '';
         const shareUrl = shareUrlFromItem(v);
         const cat = Array.isArray(v.cat) && v.cat.length ? v.cat[0] : null;
         const subcatName = cat?.subcategory ?? '';

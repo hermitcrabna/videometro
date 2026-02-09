@@ -66,6 +66,53 @@ class Author extends CI_Controller {
       if ($searchTerm !== '') $query['search_term'] = $searchTerm;
       $authorItems = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_video_by_author_id/' . rawurlencode((string)$authorId) . '?' . http_build_query($query)) ?? [];
     }
+    if ($authorId !== '' && $slug !== '' && empty($authorItems)) {
+      $query = [
+        'azienda_id' => $aziendaId,
+        'limit' => 50,
+        'offset' => 0,
+        'search_term' => str_replace('-', ' ', $slug),
+      ];
+      $authors = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_authors?' . http_build_query($query)) ?? [];
+      foreach ($authors as $a) {
+        $aSlug = $a['slug'] ?? '';
+        if ($aSlug === '') {
+          $aSlug = vm_slugify((string)($a['name'] ?? ''));
+        }
+        if ($aSlug === $slug) {
+          $authorId = (string)($a['id'] ?? $a['author_id'] ?? '');
+          $authorName = (string)($a['name'] ?? $authorName);
+          $authorImg = (string)($a['image'] ?? $authorImg);
+          $authorCount = (string)($a['num_video'] ?? $authorCount);
+          $authorFb = (string)($a['facebook'] ?? $authorFb);
+          $authorLi = (string)($a['linkedin'] ?? $authorLi);
+          break;
+        }
+      }
+      if ($authorId !== '') {
+        $query = [
+          'azienda_id' => $aziendaId,
+          'limit' => $limit,
+          'offset' => 0,
+        ];
+        if ($searchTerm !== '') $query['search_term'] = $searchTerm;
+        $authorItems = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_video_by_author_id/' . rawurlencode((string)$authorId) . '?' . http_build_query($query)) ?? [];
+      }
+    }
+    if ($authorId !== '' && ($authorName === '' || $authorImg === '' || $authorCount === '')) {
+      foreach ($authorItems as $item) {
+        $authors = $item['authors'] ?? null;
+        if (!is_array($authors)) continue;
+        foreach ($authors as $a) {
+          $aId = (string)($a['id'] ?? $a['author_id'] ?? '');
+          if ($aId !== '' && $aId !== (string)$authorId) continue;
+          if ($authorName === '' && isset($a['name'])) $authorName = (string)$a['name'];
+          if ($authorImg === '' && isset($a['image'])) $authorImg = (string)$a['image'];
+          if ($authorCount === '' && isset($a['num_video'])) $authorCount = (string)$a['num_video'];
+          break 2;
+        }
+      }
+    }
 
     $categoriesRaw = $this->vmapi->fetch_json($this->vmapi->api_base() . '/get_category?' . http_build_query([
       'azienda_id' => $aziendaId,
