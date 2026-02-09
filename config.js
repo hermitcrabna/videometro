@@ -1,5 +1,5 @@
 window.APP_CONFIG = Object.assign({
-  aziendaId: 1,
+  aziendaId: 10,
   // Base URL pubblico (senza slash finale) e sottocartella base (con slash iniziale, senza finale).
   siteUrl: 'https://videometro.tv',
   basePath: '/videometro',
