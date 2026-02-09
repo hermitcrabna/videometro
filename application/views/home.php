@@ -81,12 +81,20 @@
     .socials a:hover { background: rgba(255,255,255,.1); }
     .socials svg { width:16px; height:16px; display:block; }
     .site-footer { margin-top: 46px; padding: 28px 16px 40px; background: #0d1018; border-top: 1px solid rgba(255,255,255,.06); }
-    .footer-inner { max-width: 1200px; margin: 0 auto; display:grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display:flex; flex-direction:column; gap: 18px; }
+    .footer-top { display:flex; align-items:center; justify-content:space-between; gap: 16px; flex-wrap:wrap; }
+    .footer-links { display:flex; gap: 14px; align-items:center; font-size: 14px; }
+    .footer-links a { color:#fff; font-weight:700; text-decoration:none; }
+    .footer-columns { display:grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+    .footer-columns.single { grid-template-columns: 1fr; }
     .footer-brand { font-weight: 700; font-size: 22px; letter-spacing: .2px; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; }
     .footer-brand .dot { color: var(--accent); font-size: 1.05em; margin-left: 1px; }
     .footer-col { color: rgba(255,255,255,.82); line-height: 1.6; font-size: 14px; }
     .footer-col a { color:#fff; font-weight:700; text-decoration:none; }
-    @media (max-width: 900px) { .footer-inner { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) {
+      .footer-top { align-items:flex-start; }
+      .footer-columns { grid-template-columns: 1fr; }
+    }
     .hamburger { width: 36px; height: 36px; border-radius: 10px; border: none; background: transparent; color: #fff; display:none; place-items:center; cursor:pointer; }
     .hamburger span { width: 18px; height: 2px; background: currentColor; display:block; position: relative; }
     .hamburger span::before, .hamburger span::after { content:""; position:absolute; left:0; width: 18px; height: 2px; background: currentColor; }
@@ -431,11 +439,14 @@
 
   <footer class="site-footer" id="siteFooter" style="display:none;">
     <div class="footer-inner">
-      <div class="footer-col">
+      <div class="footer-top">
         <div class="footer-brand" id="footerLogo">videometro<span class="dot">.</span>tv</div>
-        <div id="footerLeft"></div>
+        <div class="footer-links" id="footerLinks"></div>
       </div>
-      <div class="footer-col" id="footerRight"></div>
+      <div class="footer-columns" id="footerColumns">
+        <div class="footer-col" id="footerLeft"></div>
+        <div class="footer-col" id="footerRight"></div>
+      </div>
     </div>
   </footer>
 
@@ -896,17 +907,25 @@
     function renderFooter(a) {
       const siteFooterEl = document.getElementById('siteFooter');
       const footerLogoEl = document.getElementById('footerLogo');
+      const footerLinksEl = document.getElementById('footerLinks');
+      const footerColumnsEl = document.getElementById('footerColumns');
       const footerLeftEl = document.getElementById('footerLeft');
       const footerRightEl = document.getElementById('footerRight');
-      if (!siteFooterEl || !footerLeftEl || !footerRightEl) {
+      if (!siteFooterEl || !footerLeftEl || !footerRightEl || !footerLinksEl || !footerColumnsEl) {
         setTimeout(() => renderFooter(a), 0);
         return;
       }
       const left = (a && a.footer_left) ? String(a.footer_left).trim() : '';
       const right = (a && a.footer_right) ? String(a.footer_right).trim() : '';
-      if (!left && !right) { siteFooterEl.style.display = 'none'; return; }
-      footerLeftEl.innerHTML = left;
-      footerRightEl.innerHTML = right;
+      footerLinksEl.innerHTML = `<a href="${baseUrl('privacy')}">Privacy</a><a href="${baseUrl('cookie')}">Cookie</a>`;
+      let leftFinal = left;
+      let rightFinal = right;
+      if (!leftFinal && rightFinal) { leftFinal = rightFinal; rightFinal = ''; }
+      footerLeftEl.innerHTML = leftFinal;
+      footerRightEl.innerHTML = rightFinal;
+      const hasColumns = Boolean(leftFinal || rightFinal);
+      footerColumnsEl.style.display = hasColumns ? 'grid' : 'none';
+      footerColumnsEl.classList.toggle('single', Boolean(leftFinal && !rightFinal));
       if (footerLogoEl && brandText) footerLogoEl.innerHTML = brandText.innerHTML;
       siteFooterEl.style.display = 'block';
     }
