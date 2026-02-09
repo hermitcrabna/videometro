@@ -355,7 +355,7 @@
           if (!name || !sid) return;
           const slug = s.slug ?? slugify(name);
           const link = document.createElement('a');
-          link.href = `${baseUrl(`video/categoria/${slug}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`;
+          link.href = baseUrl(`video/categoria/${slug}`);
           link.textContent = name;
           if (featured) {
             const badge = document.createElement('span');
@@ -400,7 +400,7 @@
               if (!name || !sid) return;
               const slug = s.slug ?? slugify(name);
               const a = document.createElement('a');
-              a.href = `${baseUrl(`video/categoria/${slug}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`;
+              a.href = baseUrl(`video/categoria/${slug}`);
               a.textContent = name;
               sub.appendChild(a);
             });

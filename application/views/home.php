@@ -351,7 +351,7 @@
                 <?php endif; ?>
               </div>
               <?php if ($subcatName): ?>
-                <a class="tag" href="<?= vm_h($basePath . '/video/categoria/' . vm_slugify($subcatName) . '?cat_id=' . urlencode((string)$catId) . '&subcat_id=' . urlencode((string)$subcatId)) ?>"><?= vm_h($subcatName) ?></a>
+                <a class="tag" href="<?= vm_h($basePath . '/video/categoria/' . vm_slugify($subcatName)) ?>"><?= vm_h($subcatName) ?></a>
               <?php endif; ?>
             </div>
           </div>
@@ -419,7 +419,7 @@
                 <?php endif; ?>
               </div>
               <?php if ($subcatName): ?>
-                <a class="tag" href="<?= vm_h($basePath . '/video/categoria/' . vm_slugify($subcatName) . '?cat_id=' . urlencode((string)$catId) . '&subcat_id=' . urlencode((string)$subcatId)) ?>"><?= vm_h($subcatName) ?></a>
+                <a class="tag" href="<?= vm_h($basePath . '/video/categoria/' . vm_slugify($subcatName)) ?>"><?= vm_h($subcatName) ?></a>
               <?php endif; ?>
             </div>
           </div>
@@ -859,6 +859,11 @@
 
     async function checkBlogMenu() {
       try {
+        // Per filtri (cat/subcat), riallinea l'offset con le card renderizzate
+        if (!isHomeNoFilters() && !searchTerm && !featured && grid) {
+          const rendered = grid.querySelectorAll('.card').length;
+          if (rendered > 0 && rendered !== offset) offset = rendered;
+        }
         const qs = new URLSearchParams();
         if (aziendaId) qs.set('azienda_id', String(aziendaId));
         qs.set('limit', '1');
@@ -1009,7 +1014,7 @@
           subcatNameById.set(String(sid), String(name));
           const link = document.createElement('a');
           const slug = s.slug ?? slugify(name);
-          link.href = `${baseUrl(`video/categoria/${slug}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`;
+          link.href = baseUrl(`video/categoria/${slug}`);
           link.textContent = name;
           if (featured) {
             const badge = document.createElement('span');
@@ -1109,7 +1114,7 @@
           if (!name || !sid) return;
           const link = document.createElement('a');
           const slug = s.slug ?? slugify(name);
-          link.href = `${baseUrl(`video/categoria/${slug}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`;
+          link.href = baseUrl(`video/categoria/${slug}`);
           link.textContent = name;
           if (featured) {
             const badge = document.createElement('span');
@@ -1306,7 +1311,7 @@
               ${authorImg && authorHref ? `<a href="${authorHref}"><img src="${escapeHtml(authorImg)}" alt="" loading="lazy" decoding="async"></a>` : ''}
               ${authorName ? `<div class="author-tooltip">${escapeHtml(authorName)}${authorCount ? ` · ${escapeHtml(authorCount)} video` : ''}</div>` : ''}
             </div>
-            ${subcatName ? `<a class="tag" href="${baseUrl(`video/categoria/${slugify(subcatName)}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(subcatId)}">${escapeHtml(subcatName)}</a>` : ''}
+            ${subcatName ? `<a class="tag" href="${baseUrl(`video/categoria/${slugify(subcatName)}`)}">${escapeHtml(subcatName)}</a>` : ''}
             <div class="share-wrap">
               <button class="share-btn" aria-label="Condividi">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1577,7 +1582,7 @@
               ${authorImg && authorHref ? `<a href="${authorHref}"><img src="${escapeHtml(authorImg)}" alt="" loading="lazy" decoding="async"></a>` : ''}
               ${authorName ? `<div class="author-tooltip">${escapeHtml(authorName)}${authorCount ? ` · ${escapeHtml(authorCount)} video` : ''}</div>` : ''}
             </div>
-            ${subcatName ? `<a class="tag" href="${baseUrl(`video/categoria/${slugify(subcatName)}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(subcatId)}">${escapeHtml(subcatName)}</a>` : ''}
+            ${subcatName ? `<a class="tag" href="${baseUrl(`video/categoria/${slugify(subcatName)}`)}">${escapeHtml(subcatName)}</a>` : ''}
             <div class="share-wrap">
               <button class="share-btn" aria-label="Condividi">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1678,7 +1683,7 @@ function resetAndLoad() {
     function applyMainSSR() {
       if (!SSR?.items || !Array.isArray(SSR.items)) return false;
       grid.innerHTML = '';
-      renderItems(SSR.items, grid, { skipFeatured: true, skipLatest: isHomeNoFilters(), dimGrid: true, withInlineBanners: true });
+      renderItems(SSR.items, grid, { skipFeatured: isHomeNoFilters(), skipLatest: isHomeNoFilters(), dimGrid: true, withInlineBanners: true });
       bindCardNavigation(grid);
       offset = typeof SSR.offset === 'number' ? SSR.offset : (isHomeNoFilters() ? (latestItems.length || 0) : 0);
       ended = SSR.items.length < (SSR.limit || limit);
@@ -1718,7 +1723,8 @@ function resetAndLoad() {
         if (catId) qs.set('cat_id', catId);
         if (subcatId) qs.set('subcat_id', subcatId);
         if (featured) qs.set('featured', featured);
-        else qs.set('featured', '0');
+        else if (isHomeNoFilters()) qs.set('featured', '0');
+        else qs.set('featured', 'all');
 
         const url = `${baseUrl('api/videos.php')}?${qs.toString()}`;
         const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
@@ -1732,7 +1738,7 @@ function resetAndLoad() {
         const items = extractItems(json);
         if (!items) throw new Error('Risposta non valida: array di video non trovato');
         grid.innerHTML = '';
-        renderItems(items, grid, { skipFeatured: true, skipLatest: isHomeNoFilters(), dimGrid: true, withInlineBanners: true });
+        renderItems(items, grid, { skipFeatured: isHomeNoFilters(), skipLatest: isHomeNoFilters(), dimGrid: true, withInlineBanners: true });
         const hasNext = items.length >= limit;
         currentPage = page;
         setPager(true, currentPage, hasNext);
@@ -1765,7 +1771,8 @@ function resetAndLoad() {
         if (catId) qs.set('cat_id', catId);
         if (subcatId) qs.set('subcat_id', subcatId);
         if (featured) qs.set('featured', featured);
-        else qs.set('featured', '0');
+        else if (isHomeNoFilters()) qs.set('featured', '0');
+        else qs.set('featured', 'all');
 
         const url = `${baseUrl('api/videos.php')}?${qs.toString()}`;
         const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
@@ -1784,7 +1791,7 @@ function resetAndLoad() {
           throw new Error('Risposta non valida: array di video non trovato');
         }
 
-        renderItems(items, grid, { skipFeatured: true, skipLatest: isHomeNoFilters(), dimGrid: true, withInlineBanners: true });
+        renderItems(items, grid, { skipFeatured: isHomeNoFilters(), skipLatest: isHomeNoFilters(), dimGrid: true, withInlineBanners: true });
 
         // Stop se non arrivano più risultati
         if (items.length === 0 || items.length < limit) {
@@ -1821,11 +1828,23 @@ function resetAndLoad() {
       io.observe(sentinel);
     }
 
+    function getScrollHeight() {
+      const b = document.body;
+      const d = document.documentElement;
+      return Math.max(
+        b?.scrollHeight || 0,
+        d?.scrollHeight || 0,
+        b?.offsetHeight || 0,
+        d?.offsetHeight || 0
+      );
+    }
     const onScroll = () => {
-      const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 800;
+      const nearBottom = window.innerHeight + window.scrollY >= getScrollHeight() - 800;
       if (nearBottom) loadNextPage();
     };
     window.addEventListener('scroll', onScroll, { passive: true });
+    // Fallback per ambienti dove lo scroll event non scatta correttamente
+    setInterval(onScroll, 500);
 
     // Fallback: se la pagina è corta, carica subito altre pagine
     function ensureFillViewport() {
@@ -1963,8 +1982,18 @@ function resetAndLoad() {
     } else {
       if (latestSection) latestSection.style.display = 'none';
       if (featuredSection) featuredSection.style.display = 'none';
-      if (!applyMainSSR()) loadNextPage().then(ensureFillViewport);
-      else ensureFillViewport();
+      if (!applyMainSSR()) {
+        loadNextPage()
+          .then(() => {
+            if ((catId || subcatId) && !searchTerm && !featured) return loadNextPage();
+          })
+          .then(ensureFillViewport);
+      } else {
+        ensureFillViewport();
+        if ((catId || subcatId) && !searchTerm && !featured) {
+          setTimeout(() => loadNextPage(), 300);
+        }
+      }
     }
     bindSoftFadeImages();
     loadCategories();
