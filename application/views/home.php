@@ -1171,12 +1171,30 @@
       if (!slug) return '';
       slug = slug.replace(/^https?:\/\/[^/]+/i, '');
       slug = slug.replace(/^[\/]+/, '');
+      slug = slug.split('?')[0].split('#')[0];
       const baseSeg = BASE_PATH.replace(/^\/+/, '');
       while (baseSeg && slug.startsWith(baseSeg + '/')) {
         slug = slug.slice(baseSeg.length + 1);
       }
       slug = slug.replace(/^(video|blog|gallery)\//, '');
       return slug;
+    }
+    function normalizeNavPath(raw) {
+      let p = String(raw ?? '').trim();
+      if (!p) return '';
+      p = p.replace(/^https?:\/\/[^/]+/i, '');
+      p = p.replace(/^[\/]+/, '');
+      p = p.split('?')[0].split('#')[0];
+      const baseSeg = BASE_PATH.replace(/^\/+/, '');
+      while (baseSeg && p.startsWith(baseSeg + '/')) {
+        p = p.slice(baseSeg.length + 1);
+      }
+      return p;
+    }
+    function authorPathFrom(authorSlug) {
+      const slug = String(authorSlug ?? '').trim();
+      if (slug) return `protagonisti/${slug}`;
+      return '';
     }
     function contentPathFromItem(v) {
       const slug = normalizeSlug(v?.slug_post ?? v?.slug ?? v?.seo_slug ?? v?.url ?? v?.link ?? '');
@@ -1258,7 +1276,8 @@
         const authorCount = author?.num_video ?? '';
         const authorId = author?.id ?? '';
         const authorSlug = author?.slug ?? slugify(authorName);
-        const authorHref = authorSlug ? baseUrl(`protagonisti/${authorSlug}`) : '';
+        const authorPath = authorPathFrom(authorSlug);
+        const authorHref = authorPath ? baseUrl(authorPath) : '';
         const cat = Array.isArray(v.cat) && v.cat.length ? v.cat[0] : null;
         const subcatName = cat?.subcategory ?? '';
         const catId = cat?.cat_id ?? v.cat_id ?? '';
@@ -1521,7 +1540,8 @@
         const authorCount = author?.num_video ?? '';
         const authorId = author?.id ?? '';
         const authorSlug = author?.slug ?? slugify(authorName);
-        const authorHref = authorSlug ? baseUrl(`protagonisti/${authorSlug}`) : '';
+        const authorPath = authorPathFrom(authorSlug);
+        const authorHref = authorPath ? baseUrl(authorPath) : '';
         const shareUrl = shareUrlFromItem(v);
         const cat = Array.isArray(v.cat) && v.cat.length ? v.cat[0] : null;
         const subcatName = cat?.subcategory ?? '';

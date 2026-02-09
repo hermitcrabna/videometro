@@ -39,6 +39,21 @@ class Author_videos extends CI_Controller {
     $url = $this->vmapi->api_base() . '/get_video_by_author_id?' . http_build_query($query);
     $res = $this->vmapi->fetch_raw($url);
 
+    $raw = $res['raw'];
+    $maybeJson = is_string($raw) ? json_decode($raw, true) : null;
+    $isEmptyArray = is_array($maybeJson) && count($maybeJson) === 0;
+
+    if ($isEmptyArray) {
+      $fallbackQuery = $query;
+      $fallbackQuery['author_id'] = $author_id;
+      $fallbackUrl = $this->vmapi->api_base() . '/get_video?' . http_build_query($fallbackQuery);
+      $fallback = $this->vmapi->fetch_raw($fallbackUrl);
+      if ($fallback['raw'] !== false && $fallback['http'] >= 200 && $fallback['http'] < 300) {
+        $res = $fallback;
+        $raw = $fallback['raw'];
+      }
+    }
+
     if ($res['raw'] === false || $res['http'] < 200 || $res['http'] >= 300) {
       $this->output->set_status_header(502);
       $this->output->set_content_type('application/json; charset=utf-8');
@@ -54,6 +69,6 @@ class Author_videos extends CI_Controller {
     }
 
     $this->output->set_content_type('application/json; charset=utf-8');
-    $this->output->set_output($res['raw']);
+    $this->output->set_output($raw);
   }
 }

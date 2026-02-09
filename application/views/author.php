@@ -416,6 +416,11 @@
       const base = baseUrl(path);
       return query ? `${base}?${query}` : base;
     }
+    function authorPathFrom(authorSlug) {
+      const slug = String(authorSlug ?? '').trim();
+      if (slug) return `protagonisti/${slug}`;
+      return '';
+    }
 
     const pathMatch = location.pathname.match(/\/protagonisti\/([^/]+)/);
     const rawSegment = pathMatch ? pathMatch[1] : '';
@@ -1004,7 +1009,8 @@
         const authorCount = author?.num_video ?? '';
         const authorId = author?.id ?? '';
         const authorSlug = author?.slug ?? slugify(authorName);
-        const authorHref = authorSlug ? baseUrl(`protagonisti/${authorSlug}`) : '';
+        const authorPath = authorPathFrom(authorSlug);
+        const authorHref = authorPath ? baseUrl(authorPath) : '';
         const shareUrl = shareUrlFromItem(v);
         const cat = Array.isArray(v.cat) && v.cat.length ? v.cat[0] : null;
         const subcatName = cat?.subcategory ?? '';
@@ -1140,6 +1146,7 @@
 
     function applySSR() {
       if (!SSR?.items || !Array.isArray(SSR.items)) return false;
+      if (SSR.items.length === 0) return false;
       grid.innerHTML = '';
       renderItems(SSR.items);
       bindCardNavigation(grid);

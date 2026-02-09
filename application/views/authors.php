@@ -469,6 +469,11 @@
       }
       return wrap;
     }
+    function authorPathFrom(authorSlug) {
+      const slug = String(authorSlug ?? '').trim();
+      if (slug) return `protagonisti/${slug}`;
+      return '';
+    }
 
     function normalizeAzienda(data) {
       if (!data) return null;
@@ -705,8 +710,8 @@
         card.addEventListener('click', (e) => {
           if (e.target && e.target.tagName === 'A') return;
           const authorSlug = a.slug || slugify(name);
-          const path = baseUrl(`protagonisti/${authorSlug}`);
-          location.href = path;
+          const authorPath = authorPathFrom(authorSlug);
+          if (authorPath) location.href = baseUrl(authorPath);
         });
         frag.appendChild(card);
         authorRenderCount += 1;

@@ -494,7 +494,8 @@
         link.className = 'author';
         const authorName = a.name || '';
         const authorSlug = a.slug || slugify(authorName);
-        link.href = baseUrl(`protagonisti/${authorSlug}`);
+        const authorPath = authorSlug ? `protagonisti/${authorSlug}` : '';
+        link.href = baseUrl(authorPath);
         link.innerHTML = `${a.image ? `<img src="${a.image}" alt="">` : ''}<span>${a.name || ''}</span>`;
         authorsEl.appendChild(link);
       });
