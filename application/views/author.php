@@ -804,7 +804,7 @@
           if (!name || !sid) return;
           const link = document.createElement('a');
           const slug = s.slug ?? slugify(name);
-          link.href = `${baseUrl(`video/categoria/${slug}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`;
+          link.href = baseUrl(`video/categoria/${slug}`);
           link.textContent = name;
           if (featured) {
             const badge = document.createElement('span');
@@ -1057,7 +1057,7 @@
               ${authorImg && authorHref ? `<a href="${authorHref}"><img src="${escapeHtml(authorImg)}" alt="" loading="lazy" decoding="async"></a>` : ''}
               ${authorName ? `<div class="author-tooltip">${escapeHtml(authorName)}${authorCount ? ` · ${escapeHtml(authorCount)} video` : ''}</div>` : ''}
             </div>
-            ${subcatName ? `<a class="tag" href="${baseUrl(`video/categoria/${slugify(subcatName)}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(subcatId)}">${escapeHtml(subcatName)}</a>` : ''}
+            ${subcatName ? `<a class="tag" href="${baseUrl(`video/categoria/${slugify(subcatName)}`)}">${escapeHtml(subcatName)}</a>` : ''}
             <div class="share-wrap">
               <button class="share-btn" aria-label="Condividi">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -639,7 +639,7 @@
           if (!name || !sid) return;
           const link = document.createElement('a');
           const slug = s.slug ?? slugify(name);
-          link.href = `${baseUrl(`video/categoria/${slug}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`;
+          link.href = baseUrl(`video/categoria/${slug}`);
           link.textContent = name;
           if (featured) {
             const badge = document.createElement('span');
