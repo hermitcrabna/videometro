@@ -314,12 +314,19 @@
           $type = strtolower((string)($v['type'] ?? $v['tipo'] ?? $v['content_type'] ?? ''));
           $blogVal = $v['blog'] ?? null;
           $galleryVal = $v['gallery'] ?? null;
+<<<<<<< HEAD
           $hasTypeFlags = !is_null($blogVal) || !is_null($galleryVal);
           $isGallery = (string)($galleryVal ?? '0') === '1' || $type === 'gallery';
           $isBlog = (string)($blogVal ?? '0') === '1' || $type === 'blog';
           // If flags exist and neither is true, treat as video (keep default).
           // If flags are missing, default to video (no blog/gallery).
           $slug = $v['slug_post'] ?? $v['slug'] ?? $v['seo_slug'] ?? '';
+=======
+          $isVideo = $type !== '';
+          $isGallery = !$isVideo && ((string)($galleryVal ?? '0') === '1' || $type === 'gallery');
+          $isBlog = !$isVideo && ((string)($blogVal ?? '0') === '1' || !empty($v['slug_post']) || $type === 'blog');
+          $slug = $v['slug_post'] ?? $v['slug_video'] ?? $v['slug'] ?? $v['seo_slug'] ?? '';
+>>>>>>> codex/nuove-modifiche
           $id = $v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? '';
           if ($isGallery) {
             $path = $slug ? ('gallery/' . rawurlencode((string)$slug)) : ($id ? ('gallery/' . rawurlencode((string)$id)) : '');
@@ -870,6 +877,7 @@
       if (!slug) return '';
       slug = slug.replace(/^https?:\/\/[^/]+/i, '');
       slug = slug.replace(/^[\/]+/, '');
+      slug = slug.split('?')[0].split('#')[0];
       const baseSeg = BASE_PATH.replace(/^\/+/, '');
       while (baseSeg && slug.startsWith(baseSeg + '/')) {
         slug = slug.slice(baseSeg.length + 1);
@@ -878,12 +886,13 @@
       return slug;
     }
     function contentPathFromItem(v) {
-      const slug = normalizeSlug(v?.slug_post ?? v?.slug ?? v?.seo_slug ?? v?.url ?? v?.link ?? '');
+      const slug = normalizeSlug(v?.slug_post ?? v?.slug_video ?? v?.slug ?? v?.seo_slug ?? v?.url ?? v?.link ?? '');
       const type = String(v?.type ?? v?.tipo ?? v?.content_type ?? '').toLowerCase();
       const blogVal = v?.blog ?? null;
       const galleryVal = v?.gallery ?? null;
-      const isGallery = toFlag(galleryVal) || type === 'gallery';
-      const isBlog = toFlag(blogVal) || type === 'blog';
+      const isVideo = type !== '';
+      const isGallery = !isVideo && (toFlag(galleryVal) || type === 'gallery');
+      const isBlog = !isVideo && (toFlag(blogVal) || Boolean(v?.slug_post) || type === 'blog');
       const id = v?.post_id ?? v?.id ?? v?.video_id ?? '';
       if (isGallery && slug) return `gallery/${slug}`;
       if (isGallery && id) return `gallery/${encodeURIComponent(String(id))}`;
@@ -903,8 +912,9 @@
       const type = String(v?.type ?? v?.tipo ?? v?.content_type ?? '').toLowerCase();
       const blogVal = v?.blog ?? null;
       const galleryVal = v?.gallery ?? null;
-      const isGallery = toFlag(galleryVal) || type === 'gallery';
-      const isBlog = toFlag(blogVal) || type === 'blog';
+      const isVideo = type !== '';
+      const isGallery = !isVideo && (toFlag(galleryVal) || type === 'gallery');
+      const isBlog = !isVideo && (toFlag(blogVal) || Boolean(v?.slug_post) || type === 'blog');
       if (isBlog || isGallery) {
         return [
           isBlog ? typeIcon('blog', 'Blog', ICON_BLOG) : '',
@@ -1023,11 +1033,10 @@
         const vType = String(v?.type ?? v?.tipo ?? v?.content_type ?? '').toLowerCase();
         const blogVal = v?.blog ?? null;
         const galleryVal = v?.gallery ?? null;
-        const hasTypeFlags = blogVal !== null || galleryVal !== null;
-        const isGallery = toFlag(galleryVal) || vType === 'gallery';
-        let isBlog = toFlag(blogVal) || Boolean(v?.slug_post) || vType === 'blog';
-        // If flags exist and neither is true, treat as video (keep default).
-        card.dataset.slug = String(v?.slug_post ?? v?.slug ?? v?.seo_slug ?? '');
+        const isVideo = vType !== '';
+        const isGallery = !isVideo && (toFlag(galleryVal) || vType === 'gallery');
+        const isBlog = !isVideo && (toFlag(blogVal) || Boolean(v?.slug_post) || vType === 'blog');
+        card.dataset.slug = String(v?.slug_post ?? v?.slug_video ?? v?.slug ?? v?.seo_slug ?? '');
         card.dataset.id = String(v?.post_id ?? v?.id ?? v?.video_id ?? '');
         card.dataset.blog = isBlog ? '1' : '0';
         card.dataset.gallery = isGallery ? '1' : '0';
