@@ -1752,7 +1752,6 @@ function resetAndLoad() {
     }
 
 
-    const isLocal = ['localhost','127.0.0.1'].includes(location.hostname);
     async function loadNextPage() {
       if (loading || ended) return;
 
@@ -1776,7 +1775,6 @@ function resetAndLoad() {
         else qs.set('featured', 'all');
 
         const url = `${baseUrl('api/videos.php')}?${qs.toString()}`;
-        if (isLocal) console.log('[vm] loadNextPage', { offset, url });
         const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
 
         let json = null;
@@ -1794,7 +1792,6 @@ function resetAndLoad() {
         }
 
         renderItems(items, grid, { skipFeatured: isHomeNoFilters(), skipLatest: isHomeNoFilters(), dimGrid: true, withInlineBanners: true });
-        if (isLocal) console.log('[vm] loadNextPage items', { count: items.length });
 
         // Stop se non arrivano più risultati
         if (items.length === 0 || items.length < limit) {
@@ -1848,13 +1845,6 @@ function resetAndLoad() {
     window.addEventListener('scroll', onScroll, { passive: true });
     // Fallback per ambienti dove lo scroll event non scatta correttamente
     setInterval(onScroll, 500);
-    if (isLocal) {
-      window.vmDebug = {
-        loadNextPage,
-        getState: () => ({ offset, ended, loading, catId, subcatId, featured, searchTerm }),
-      };
-      console.log('[vm] debug ready');
-    }
 
     // Fallback: se la pagina è corta, carica subito altre pagine
     function ensureFillViewport() {
