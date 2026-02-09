@@ -638,7 +638,8 @@
           const featured = String(s.featured ?? '0') === '1';
           if (!name || !sid) return;
           const link = document.createElement('a');
-          link.href = baseUrl(`video/categoria/${slugify(name)}`);
+          const slug = s.slug ?? slugify(name);
+          link.href = `${baseUrl(`video/categoria/${slug}`)}?cat_id=${encodeURIComponent(catId)}&subcat_id=${encodeURIComponent(sid)}`;
           link.textContent = name;
           if (featured) {
             const badge = document.createElement('span');
