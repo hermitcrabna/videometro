@@ -186,20 +186,20 @@
     .s-line.w2 { width:50%; }
     .s-spinner { position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); width:26px; height:26px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation: spin 0.8s linear infinite; }
     
-    .site-footer { margin-top: 46px; padding: 22px 16px 32px; background: #0d1018; border-top: 1px solid rgba(255,255,255,.06); }
+    .site-footer { margin-top: 46px; padding: 28px 16px 40px; background: #0d1018; border-top: 1px solid rgba(255,255,255,.06); }
     .footer-inner { max-width: 1200px; margin: 0 auto; display:flex; flex-direction:column; gap: 18px; }
-    .footer-top { display:flex; align-items:center; justify-content:space-between; gap: 16px; }
-    .footer-links { display:flex; align-items:center; gap: 18px; flex-wrap:wrap; }
-    .footer-links a { color:#fff; text-decoration:none; font-weight:600; font-size:14px; opacity:.9; }
-    .footer-links a:hover { opacity:1; }
-    .footer-bottom { display:grid; grid-template-columns: 1fr 1fr; gap: 26px; }
-    .footer-brand { font-weight: 700; font-size: 20px; letter-spacing: .2px; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; }
+    .footer-top { display:flex; align-items:center; justify-content:space-between; gap: 16px; flex-wrap:wrap; }
+    .footer-links { display:flex; gap: 14px; align-items:center; font-size: 14px; }
+    .footer-links a { color:#fff; font-weight:700; text-decoration:none; }
+    .footer-columns { display:grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+    .footer-columns.single { grid-template-columns: 1fr; }
+    .footer-brand { font-weight: 700; font-size: 22px; letter-spacing: .2px; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; }
     .footer-brand .dot { color: var(--accent); font-size: 1.05em; margin-left: 1px; }
     .footer-col { color: rgba(255,255,255,.82); line-height: 1.6; font-size: 14px; }
     .footer-col a { color:#fff; font-weight:700; text-decoration:none; }
     @media (max-width: 900px) {
-      .footer-top { flex-direction:column; align-items:flex-start; }
-      .footer-bottom { grid-template-columns: 1fr; }
+      .footer-top { align-items:flex-start; }
+      .footer-columns { grid-template-columns: 1fr; }
     }
     
     @media (max-width: 768px) { .socials, .social-sep { display: none !important; } }
@@ -294,6 +294,7 @@
           $thumb = $v['image'] ?? $v['thumbnail'] ?? $v['thumb'] ?? $v['poster'] ?? '';
           $rawSummary = (string)($v['summary'] ?? $v['seo-description'] ?? '');
           $summary = strip_tags($rawSummary);
+          $summaryHasHtml = ($rawSummary !== '' && strip_tags($rawSummary) !== $rawSummary);
           $author = is_array($v['authors'] ?? null) && !empty($v['authors']) ? $v['authors'][0] : null;
           $aImg = is_array($author) ? ($author['image'] ?? '') : '';
           $aName = is_array($author) ? ($author['name'] ?? '') : '';
@@ -314,19 +315,10 @@
           $type = strtolower((string)($v['type'] ?? $v['tipo'] ?? $v['content_type'] ?? ''));
           $blogVal = $v['blog'] ?? null;
           $galleryVal = $v['gallery'] ?? null;
-<<<<<<< HEAD
-          $hasTypeFlags = !is_null($blogVal) || !is_null($galleryVal);
-          $isGallery = (string)($galleryVal ?? '0') === '1' || $type === 'gallery';
-          $isBlog = (string)($blogVal ?? '0') === '1' || $type === 'blog';
-          // If flags exist and neither is true, treat as video (keep default).
-          // If flags are missing, default to video (no blog/gallery).
-          $slug = $v['slug_post'] ?? $v['slug'] ?? $v['seo_slug'] ?? '';
-=======
           $isVideo = $type !== '';
           $isGallery = !$isVideo && ((string)($galleryVal ?? '0') === '1' || $type === 'gallery');
           $isBlog = !$isVideo && ((string)($blogVal ?? '0') === '1' || !empty($v['slug_post']) || $type === 'blog');
           $slug = $v['slug_post'] ?? $v['slug_video'] ?? $v['slug'] ?? $v['seo_slug'] ?? '';
->>>>>>> codex/nuove-modifiche
           $id = $v['post_id'] ?? $v['id'] ?? $v['video_id'] ?? '';
           if ($isGallery) {
             $path = $slug ? ('gallery/' . rawurlencode((string)$slug)) : ($id ? ('gallery/' . rawurlencode((string)$id)) : '');
@@ -436,7 +428,7 @@
     const pathSlug = rawSegment ? rawSegment.replace(/^\d+-?/, '') : '';
 
     const AUTHOR = window.__AUTHOR__ || {};
-    let authorId = AUTHOR.id || params.get('id') || pathId || '';
+    const authorId = AUTHOR.id || params.get('id') || pathId || '';
     const authorName = AUTHOR.name || params.get('name') || (pathSlug ? pathSlug.replace(/-/g, ' ') : 'Autore');
     const authorImg = AUTHOR.image || params.get('image') || '';
     const authorCount = AUTHOR.num_video || params.get('num_video') || '';
@@ -712,19 +704,26 @@
     function renderFooter(a) {
       const siteFooterEl = document.getElementById('siteFooter');
       const footerLogoEl = document.getElementById('footerLogo');
+      const footerLinksEl = document.getElementById('footerLinks');
+      const footerColumnsEl = document.getElementById('footerColumns');
       const footerLeftEl = document.getElementById('footerLeft');
       const footerRightEl = document.getElementById('footerRight');
-      const footerBottomEl = document.getElementById('footerBottom');
-      if (!siteFooterEl || !footerLeftEl || !footerRightEl) {
+      if (!siteFooterEl || !footerLeftEl || !footerRightEl || !footerLinksEl || !footerColumnsEl) {
         setTimeout(() => renderFooter(a), 0);
         return;
       }
       const left = (a && a.footer_left) ? String(a.footer_left).trim() : '';
       const right = (a && a.footer_right) ? String(a.footer_right).trim() : '';
-      footerLeftEl.innerHTML = left;
-      footerRightEl.innerHTML = right;
+      footerLinksEl.innerHTML = `<a href="${baseUrl('privacy')}">Privacy</a><a href="${baseUrl('cookie')}">Cookie</a>`;
+      let leftFinal = left;
+      let rightFinal = right;
+      if (!leftFinal && rightFinal) { leftFinal = rightFinal; rightFinal = ''; }
+      footerLeftEl.innerHTML = leftFinal;
+      footerRightEl.innerHTML = rightFinal;
+      const hasColumns = Boolean(leftFinal || rightFinal);
+      footerColumnsEl.style.display = hasColumns ? 'grid' : 'none';
+      footerColumnsEl.classList.toggle('single', Boolean(leftFinal && !rightFinal));
       if (footerLogoEl && brandText) footerLogoEl.innerHTML = brandText.innerHTML;
-      if (footerBottomEl) footerBottomEl.style.display = (!left && !right) ? 'none' : 'grid';
       siteFooterEl.style.display = 'block';
     }
 
@@ -1144,15 +1143,6 @@
       updateVideoSchema(items);
     }
 
-    function syncAuthorIdFromItems(items) {
-      if (authorId) return;
-      if (!Array.isArray(items) || !items.length) return;
-      const first = items.find(Boolean);
-      const author = Array.isArray(first?.authors) && first.authors.length ? first.authors[0] : null;
-      const derivedId = author?.id || author?.author_id || '';
-      if (derivedId) authorId = String(derivedId);
-    }
-
     function applySSR() {
       if (!SSR?.items || !Array.isArray(SSR.items)) return false;
       if (SSR.items.length === 0) return false;
@@ -1162,7 +1152,6 @@
       decorateCardOverlays(grid);
       offset = typeof SSR.offset === 'number' ? SSR.offset : SSR.items.length;
       ended = SSR.items.length < (SSR.limit || limit);
-      syncAuthorIdFromItems(SSR.items);
       return true;
     }
 
@@ -1197,6 +1186,7 @@
         const eff = effectiveSearchTerm();
         if (eff) qs.set('search_term', eff);
         if (authorId) qs.set('author_id', authorId);
+
         const url = `${baseUrl('api/author_videos.php')}?${qs.toString()}`;
         const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
 
@@ -1212,7 +1202,6 @@
         if (!items) throw new Error('Risposta non valida: array non trovato');
 
         renderItems(items);
-        syncAuthorIdFromItems(items);
 
         if (items.length === 0 || items.length < limit) {
           ended = true;
@@ -1335,12 +1324,9 @@
     <div class="footer-inner">
       <div class="footer-top">
         <div class="footer-brand" id="footerLogo">videometro<span class="dot">.</span>tv</div>
-        <div class="footer-links">
-          <a href="<?= htmlspecialchars($basePath . '/privacy') ?>">Privacy Policy</a>
-          <a href="<?= htmlspecialchars($basePath . '/cookie') ?>">Cookie Policy</a>
-        </div>
+        <div class="footer-links" id="footerLinks"></div>
       </div>
-      <div class="footer-bottom" id="footerBottom">
+      <div class="footer-columns" id="footerColumns">
         <div class="footer-col" id="footerLeft"></div>
         <div class="footer-col" id="footerRight"></div>
       </div>

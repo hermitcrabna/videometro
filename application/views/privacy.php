@@ -1,59 +1,105 @@
-<?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
 <!doctype html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="<?= htmlspecialchars($pageDescription ?? 'Privacy Policy') ?>" />
-  <link rel="canonical" href="<?= htmlspecialchars($canonical ?? ($siteUrl . $baseHref)) ?>" />
-  <meta property="og:type" content="article">
-  <meta property="og:title" content="<?= htmlspecialchars($pageTitle ?? 'Privacy Policy') ?>">
-  <meta property="og:description" content="<?= htmlspecialchars($pageDescription ?? 'Privacy Policy') ?>">
-  <meta property="og:url" content="<?= htmlspecialchars($canonical ?? ($siteUrl . $baseHref)) ?>">
-  <title><?= htmlspecialchars($pageTitle ?? 'Privacy Policy') ?></title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
     :root {
-      --bg: #0f1115;
-      --bar: #1f2740;
-      --bar-border: #2b3554;
+      --bg: #0b0f18;
+      --panel: #141a28;
       --text: #ffffff;
       --muted: rgba(255,255,255,.72);
-      --accent: #ff2d2d;
+      --accent: #ff4d4f;
+      --border: rgba(255,255,255,.08);
     }
-    body { min-height:100vh; display:flex; flex-direction:column; margin:0; font-family: system-ui, Arial; background:var(--bg); color:var(--text); }
-    .topbar { position: sticky; top: 0; z-index: 50; background: rgba(31,39,64,0.92); border-bottom: 1px solid var(--bar-border); backdrop-filter: blur(6px); }
-    .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display:flex; align-items:center; gap: 14px; }
-    .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; position: relative; transform: translateY(-3px); }
-    .brand .dot { color: var(--accent); font-size: 1.1em; }
-    .brand-text { display:inline-flex; align-items:center; }
-    .brand-skeleton { width: min(160px, 40vw); height: 24px; border-radius: 999px; background: linear-gradient(90deg, #2f3850 25%, #3a4563 50%, #2f3850 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; display:none; position:absolute; left:0; top:50%; transform: translateY(-50%); pointer-events:none; }
-    .brand.loading .brand-text { opacity: 0; }
-    .brand.loading .brand-skeleton { display:inline-block; }
-    .spacer { flex: 1; }
-    .back-btn { color: var(--muted); text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-size:14px; padding: 8px 12px; border-radius: 999px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); }
-    .back-btn:hover { color:#fff; background: rgba(255,255,255,.08); }
-    .wrap { flex:1; width:100%; max-width: 1200px; margin: 0 auto; padding: 28px 16px 40px; box-sizing: border-box; }
-    .title { font-size: 30px; line-height: 1.1; margin: 0 0 16px; font-weight: 700; }
-    .content { font-size: 15px; line-height: 1.7; color: rgba(255,255,255,.85); }
-    .content a { color:#fff; font-weight:700; }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Montserrat', system-ui, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      background: #1b2236;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 20px;
+    }
+    .brand {
+      font-weight: 700;
+      font-size: 26px;
+      letter-spacing: .2px;
+      color: #fff;
+      font-family: 'Montserrat', system-ui, Arial, sans-serif;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .brand .dot { color: var(--accent); }
+    .back-btn {
+      border: 1px solid rgba(255,255,255,.18);
+      background: transparent;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 32px auto 60px;
+      padding: 0 20px;
+      width: 100%;
+    }
+    .title {
+      font-size: 22px;
+      margin: 0 0 12px;
+    }
+    .content {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 13px;
+      min-height: 220px;
+    }
+    .content h1 { font-size: 20px; margin: 0 0 10px; }
+    .content h2 { font-size: 16px; margin: 14px 0 8px; }
+    .content h5 { font-size: 12px; margin: 14px 0 6px; }
+    .content p, .content li { font-size: 13px; }
   </style>
 </head>
 <body>
-  <header class="topbar">
+  <div class="topbar">
     <div class="topbar-inner">
-      <a class="brand loading" id="brandLogo" href="<?= htmlspecialchars($baseHref) ?>">
-        <span class="brand-skeleton" id="brandSkeleton"></span>
-        <span class="brand-text" id="brandText">videometro.tv</span>
-      </a>
-      <div class="spacer"></div>
-      <a class="back-btn" id="backBtn" href="<?= htmlspecialchars($baseHref) ?>" aria-label="Torna indietro">← Torna indietro</a>
+      <div class="brand">videometro<span class="dot">.</span>tv</div>
+      <button class="back-btn" id="backBtn">Indietro</button>
     </div>
-  </header>
+  </div>
 
   <main class="wrap">
-    <div class="content" id="privacyContent">
+    <h1 class="title">Privacy Policy</h1>
+    <div class="content" id="content">
       <h1>INFORMATIVA ESTESA SUI DATI PERSONALI</h1>
       <h2>AI SENSI DELL’ART.13 DEL REGOLAMENTO (UE) 2016/679 DEL PARLAMENTO EUROPEO “GDPR”</h2>
       <p> Gentile Signore/a, ai sensi dell’art. 13 del Regolamento UE 2016/679 ed in relazione alle informazioni di cui si entrerà in possesso, ai fini della tutela delle persone e altri soggetti in materia di trattamento di dati personali, si informa quanto segue:</p>
@@ -138,7 +184,7 @@
       </p>
       <h5 style="text-transform:uppercase; font-weight:bold">12 Diritto alla portabilità dei dati</h5>
       <p>
-        L'interessato ha il diritto di ricevere in un formato strutturato, di uso comune e leggibile da dispositivo automatico i dati personali che lo riguardano forniti a un titolare del trattamento e ha il diritto di trasmetterli ad un altro titolare del trattamento senza impedimenti da parte del titolare del trattamento cui li ha forniti qualora:<br/>
+        L'interessato ha il diritto di ricevere in un formato strutturato, di uso comune e leggibile da dispositivo automatico i dati personali che lo riguardano forniti a un titolare del trattamento e ha il diritto di trasmettere tali dati a un altro titolare del trattamento senza impedimenti da parte del titolare del trattamento cui li ha forniti qualora:<br/>
         <ul>
           <li>il trattamento si basi sul consenso ai sensi dell'articolo 6, paragrafo 1, lettera a), o dell'articolo 9,
       paragrafo 2, lettera a), o su un contratto ai sensi dell'articolo 6, paragrafo 1, lettera b); e
@@ -165,10 +211,10 @@
       <h5 style="text-transform:uppercase; font-weight:bold">15 Diritto di proporre reclamo alla autorità di controllo</h5>
       <p>
         <ul>
-          <li>Fatto salvo ogni altro ricorso amministrativo o giurisdizionale, l'interessato che ritenga che il trattamento che lo riguarda violi il presente regolamento ha il diritto di proporre reclamo a un'autorità di controllo, segnatamente nello Stato membro in cui risiede
+          <li>Fatto salvo ogni altro ricorso amministrativo o giurisdizionale, l'interessato che ritenga che il trattamento che lo riguarda violi il presente regolamento ha il diritto di proporre reclamo a un’autorità di controllo, segnatamente nello Stato membro in cui risiede
       abitualmente, lavora oppure del luogo ove si è verificata la presunta violazione.
       </li>
-          <li>L'autorità di controllo a cui è stato proposto il reclamo informa il reclamante dello stato o dell'esito del reclamo, compresa la possibilità di un ricorso giurisdizionale ai sensi dell'articolo 78.</li>
+          <li>L'autorità di controllo a cui è stato proposto il reclamo informa il reclamante dello stato o dell'esito del reclamo, compresa la possibilità di un ricorso giurisdizionale ai sensi dell’articolo 78.</li>
         </ul>
       </p>
       <h5 style="text-transform:uppercase; font-weight:bold">16 Modalità di utilizzo del servizio</h5>
@@ -194,95 +240,21 @@
   </main>
 
   <script>
-    window.APP_CONFIG = {
-      aziendaId: <?= (int)$aziendaId ?>,
-      basePath: <?= json_encode($basePath) ?>,
-    };
-  </script>
-  <script src="<?= htmlspecialchars($baseHref) ?>config.js"></script>
-  <script>
-    const aziendaId = parseInt(window.APP_CONFIG?.aziendaId || '1', 10);
-    function normalizeBasePath(p) {
-      const parts = String(p || '').split('/').filter(Boolean);
-      if (parts.length >= 2 && parts[0] === parts[1]) parts.splice(1, 1);
-      return parts.length ? '/' + parts.join('/') : '';
-    }
-    const BASE_PATH = normalizeBasePath(String(window.APP_CONFIG?.basePath || '').replace(/\/+$/,''));
-    function baseUrl(path = '') {
-      const clean = String(path || '').replace(/^\/+/, '');
-      const baseSeg = BASE_PATH.replace(/^\/+/, '');
-      const baseRoot = window.location.origin + (BASE_PATH || '');
-      if (!clean) return baseRoot || '/';
-      if (baseSeg && (clean === baseSeg || clean.startsWith(baseSeg + '/'))) return window.location.origin + '/' + clean;
-      return `${baseRoot}/${clean}`;
-    }
-
-    const brandLogo = document.getElementById('brandLogo');
-    const brandText = document.getElementById('brandText');
-    const backBtn = document.getElementById('backBtn');
-
-    function normalizeAzienda(data) {
-      if (!data) return null;
-      if (Array.isArray(data)) return data[0] || null;
-      if (data.id || data.name || data.url || data.banner) return data;
-      const vals = Object.values(data);
-      return vals && vals.length ? vals[0] : null;
-    }
-
-    function setAccent(color) {
-      if (!color) return;
-      document.documentElement.style.setProperty('--accent', color);
-    }
-
-    function setBrandName(name) {
-      if (!brandLogo || !brandText) return;
-      if (!name) {
-        brandLogo.classList.remove('loading');
+    function goBack() {
+      try {
+        const from = sessionStorage.getItem('vm:from');
+        if (from) {
+          window.location.href = from;
+          return;
+        }
+      } catch {}
+      if (document.referrer) {
+        window.location.href = document.referrer;
         return;
       }
-      const safe = name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      const idx = safe.lastIndexOf('.');
-      if (idx !== -1) {
-        brandText.innerHTML = `${safe.slice(0, idx)}<span class="dot">.</span>${safe.slice(idx + 1)}`;
-      } else {
-        brandText.textContent = name;
-      }
-      brandLogo.classList.remove('loading');
+      window.history.back();
     }
-
-    if (document.referrer) {
-      backBtn.href = document.referrer;
-      backBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.location.href = document.referrer;
-      });
-    } else {
-      backBtn.href = baseUrl('');
-      backBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.location.href = baseUrl('');
-      });
-    }
-
-    async function loadAzienda() {
-      if (brandLogo) brandLogo.classList.add('loading');
-      try {
-        const res = await fetch(`${baseUrl('api/azienda.php')}?azienda_id=${encodeURIComponent(aziendaId)}`, {
-          headers: { 'Accept': 'application/json' },
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const item = normalizeAzienda(data?.data ?? data);
-        if (!item) return;
-        setBrandName(item.name || item.url || '');
-        setAccent(item.color_point || '');
-      } catch (e) {
-        if (brandLogo) brandLogo.classList.remove('loading');
-      } finally {
-        if (brandLogo) brandLogo.classList.remove('loading');
-      }
-    }
-    loadAzienda();
+    document.getElementById('backBtn').addEventListener('click', goBack);
   </script>
 </body>
 </html>
