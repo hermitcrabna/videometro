@@ -230,6 +230,72 @@
     .sentinel { height: 1px; }
     .btn { padding:10px 14px; border-radius:10px; border:1px solid #333; background:#111; color:#fff; cursor:pointer; }
 
+    .hero {
+      position: relative;
+      width: 100%;
+      min-height: 360px;
+      background: var(--bg);
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, var(--bg) 0%, var(--bg) 48%, rgba(5,6,30,.45) 68%, rgba(5,6,30,0) 100%),
+        var(--hero-img);
+      background-size: cover;
+      background-position: center right;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 120px;
+      background: linear-gradient(180deg, rgba(5,6,30,0) 0%, var(--bg) 100%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      position: relative;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 42px 16px 48px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+    }
+    .hero-meta { font-size: 12px; text-transform: uppercase; letter-spacing: .16em; color: rgba(255,255,255,.6); font-weight: 600; }
+    .hero-cat { font-size: 18px; font-weight: 700; color: #fff; }
+    .hero-title { font-size: 42px; line-height: 1.12; margin: 0; font-weight: 800; color: #fff; max-width: 680px; }
+    .hero-desc { font-size: 16px; line-height: 1.6; color: rgba(255,255,255,.78); max-width: 640px; margin: 6px 0 10px; }
+    .hero-actions { display:flex; align-items:center; gap:12px; margin-top: 8px; }
+    .hero-play {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 0;
+      background: var(--accent);
+      color: #0b0f18;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      cursor: pointer;
+    }
+    .hero-play svg { width: 16px; height: 16px; }
+    @media (max-width: 900px) {
+      .hero { min-height: 300px; }
+      .hero-title { font-size: 30px; }
+      .hero-inner { padding: 28px 16px 32px; }
+    }
+    @media (max-width: 600px) {
+      .hero-title { font-size: 24px; }
+      .hero-desc { font-size: 14px; }
+    }
+
   </style>
 </head>
 <body>
@@ -295,6 +361,20 @@
       <div class="mega-inner" id="megaInner"></div>
     </div>
   </header>
+  <section class="hero" id="heroSection" style="--hero-img: url('https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1600&q=80');">
+    <div class="hero-inner">
+      <div class="hero-meta">In evidenza</div>
+      <div class="hero-cat">University Channel</div>
+      <h1 class="hero-title">Master di Comunicazione e Innovazione: una giornata in aula tra progetti e startup</h1>
+      <p class="hero-desc">Una panoramica delle lezioni, dei laboratori e delle iniziative che stanno trasformando il campus in un hub creativo.</p>
+      <div class="hero-actions">
+        <button class="hero-play" type="button">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 6l10 6-10 6V6z"></path></svg>
+          Riproduci
+        </button>
+      </div>
+    </div>
+  </section>
   <div class="banner" id="banner" style="display:none;">
     <a id="bannerLink" href="#" target="_blank" rel="noopener">
       <img id="bannerImg" alt="">
@@ -513,6 +593,7 @@
 
     const grid = document.getElementById('grid');
     const latestSection = document.getElementById('latestSection');
+    const heroSection = document.getElementById('heroSection');
     const latestGrid = document.getElementById('latestGrid');
     const latestSkeletons = document.getElementById('latestSkeletons');
     const status = document.getElementById('status');
@@ -666,6 +747,7 @@
     function updateHomeSectionsVisibility() {
       const searching = (searchBar && searchBar.classList.contains('active')) || searchTerm.length > 0;
       const showHome = isHomeNoFilters() && !searching;
+      if (heroSection) heroSection.style.display = showHome ? 'block' : 'none';
       toggleSection(latestSection, showHome);
       toggleSection(featuredSection, showHome);
       if (!banner || !bannerImg || !bannerLink) return;
