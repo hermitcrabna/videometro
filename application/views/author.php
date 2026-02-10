@@ -48,17 +48,17 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
     :root {
-      --bg: #0f1115;
+      --bg: #05061e;
       --bar: #1f2740;
       --bar-border: #2b3554;
       --text: #ffffff;
       --muted: rgba(255,255,255,.72);
-      --card: #171a21;
+      --card: rgba(30,39,70,0.85);
       --accent: #ff2d2d;
       --badge-url: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ff2d2d" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M9 13v8l3-2 3 2v-8"/></svg>');
     }
     body { min-height:100vh; display:flex; flex-direction:column; margin:0; font-family: system-ui, Arial; background:var(--bg); color:var(--text); }
-    .topbar { position: sticky; top: 0; z-index: 50; background: rgba(31,39,64,0.92); border-bottom: 1px solid var(--bar-border); backdrop-filter: blur(6px); }
+    .topbar { position: sticky; top: 0; z-index: 50; background: rgba(30,39,70,0.85); border-bottom: 1px solid var(--bar-border); backdrop-filter: blur(6px); }
     .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display:flex; align-items:center; gap: 14px; position: relative; transform: none; }
     .brand { font-weight: 700; font-size: 26px; letter-spacing: .2px; text-decoration:none; color:#fff; font-family: 'Montserrat', system-ui, Arial, sans-serif; display:inline-flex; align-items:center; position: relative; transform: translateY(-3px); }
     .brand .dot { color: var(--accent); font-size: 1.1em; }
@@ -66,7 +66,7 @@
     .brand-skeleton { width: min(160px, 40vw); height: 24px; border-radius: 999px; background: linear-gradient(90deg, #2f3850 25%, #3a4563 50%, #2f3850 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; display:none; position:absolute; left:0; top:50%; transform: translateY(-50%); pointer-events:none; }
     .brand.loading .brand-text { opacity: 0; }
     .brand.loading .brand-skeleton { display:inline-block; }
-    .nav { display:flex; align-items:center; gap: 10px; color: var(--muted); font-size: 14px; font-family: 'Montserrat', system-ui, Arial, sans-serif; letter-spacing: .2px; }
+    .nav { display:flex; align-items:center; gap: 10px; color: var(--muted); font-size: 14px; font-family: 'Montserrat', system-ui, Arial, sans-serif; letter-spacing: .2px; font-weight: 600; }
         .nav > a, .nav > span, .nav > button, .nav .nav-cat { color: inherit; text-decoration: none; cursor: pointer; padding: 8px 12px; border-radius: 999px; display:inline-flex; align-items:center; gap:6px; transition: background .2s ease, color .2s ease; background: transparent; border: none; font: inherit; }
     .nav .caret { pointer-events: none; pointer-events: none; display:inline-block; width: 6px; height: 6px; position: relative; font-size: 0; line-height: 0; transform: translateY(1px); }
 .nav > a:hover, .nav > span:hover, .nav > button:hover, .nav .nav-cat:hover { color: #fff; background: rgba(255,255,255,.08); }
@@ -141,7 +141,7 @@
     .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
     .grid.dim .card { opacity: .35; transition: opacity .2s ease; }
     .grid.dim .card.show-desc { opacity: 1; }
-    .card { background:#303a52; border-radius:14px; overflow:hidden; cursor:pointer; border: 1px solid rgba(255,255,255,.06); transition: background .2s ease, border-color .2s ease; position: relative; }
+    .card { background: rgba(30,39,70,0.85); border-radius:14px; overflow:hidden; cursor:pointer; border: 1px solid rgba(255,255,255,.06); transition: background .2s ease, border-color .2s ease; position: relative; }
     .thumb-wrap { position:relative; width:100%; }
     .thumb-overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:8px; opacity:0; pointer-events:none; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.45) 100%); transition: opacity .2s ease; }
     .card:hover .thumb-overlay,
@@ -178,7 +178,7 @@
     .skeletons { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:14px; min-width:0; box-sizing:border-box; margin-top:14px; }
     .inline-banner { grid-column: 1 / -1; }
     .inline-banner img { width:100%; height:auto; border-radius:14px; display:block; }
-    .s-card { background:#303a52; border-radius:14px; border:1px solid rgba(255,255,255,.06); overflow:hidden; position:relative; }
+    .s-card { background: rgba(30,39,70,0.85); border-radius:14px; border:1px solid rgba(255,255,255,.06); overflow:hidden; position:relative; }
     .s-thumb { aspect-ratio:16/9; background: linear-gradient(90deg, #2b3248 25%, #36405c 50%, #2b3248 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; }
     .s-body { min-height:56px; display:flex; flex-direction:column; padding:12px 14px 14px; display:flex; flex-direction:column; gap:10px; }
     .s-line { height:10px; border-radius:6px; background: #2b3248; }
@@ -186,7 +186,7 @@
     .s-line.w2 { width:50%; }
     .s-spinner { position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); width:26px; height:26px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation: spin 0.8s linear infinite; }
     
-    .site-footer { margin-top: 46px; padding: 28px 16px 40px; background: #0d1018; border-top: 1px solid rgba(255,255,255,.06); }
+    .site-footer { margin-top: 46px; padding: 28px 16px 40px; background: #05061e; border-top: 1px solid rgba(255,255,255,.06); }
     .footer-inner { max-width: 1200px; margin: 0 auto; display:flex; flex-direction:column; gap: 18px; }
     .footer-top { display:flex; align-items:center; justify-content:space-between; gap: 16px; flex-wrap:wrap; }
     .footer-links { display:flex; gap: 14px; align-items:center; font-size: 14px; }
