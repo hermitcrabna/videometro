@@ -85,3 +85,5 @@ $route['api/video_by_slug.php'] = 'api/video_by_slug/index';
 $route['api/video_by_slug'] = 'api/video_by_slug/index';
 $route['api/health.php'] = 'api/health/index';
 $route['api/health'] = 'api/health/index';
+$route['api/featured.php'] = 'api/featured/index';
+$route['api/featured'] = 'api/featured/index';
