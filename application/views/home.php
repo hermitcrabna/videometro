@@ -235,7 +235,7 @@
     .hero {
       position: relative;
       width: 100%;
-      min-height: 360px;
+      min-height: 420px;
       background: var(--bg);
       overflow: hidden;
     }
@@ -243,11 +243,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background:
-        linear-gradient(90deg, var(--bg) 0%, var(--bg) 48%, rgba(5,6,30,.45) 68%, rgba(5,6,30,0) 100%),
-        var(--hero-img);
-      background-size: cover;
-      background-position: center right;
+      background: linear-gradient(90deg, var(--bg) 0%, var(--bg) 50%, rgba(5,6,30,.35) 70%, rgba(5,6,30,0) 100%);
       z-index: 0;
     }
     .hero::after {
@@ -268,8 +264,54 @@
       margin: 0 auto;
       padding: 42px 16px 48px;
       display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 12px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      gap: 24px;
+    }
+    .hero-content { display:flex; flex-direction:column; gap:12px; }
+    .hero-media {
+      width: 100%;
+      min-height: 360px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .hero-media img {
+      width: 100%;
+      height: 100%;
+      max-height: 480px;
+      object-fit: contain;
+      display: block;
+      border-radius: 14px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .hero-slide {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .hero.is-ready .hero-slide {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .hero.is-exit .hero-slide {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    .hero-media img {
+      opacity: 0;
+      transform: translateY(8px) scale(.995);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .hero.is-ready .hero-media img {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    .hero.is-exit .hero-media img {
+      opacity: 0;
+      transform: translateY(-6px) scale(1.01);
     }
     .hero-meta { font-size: 12px; text-transform: uppercase; letter-spacing: .16em; color: rgba(255,255,255,.6); font-weight: 600; }
     .hero-cat { font-size: 18px; font-weight: 700; color: #fff; }
@@ -291,12 +333,75 @@
       text-transform: uppercase;
       letter-spacing: .04em;
       cursor: pointer;
+      text-decoration: none;
     }
     .hero-play svg { width: 16px; height: 16px; }
+    .hero-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.25);
+      background: rgba(0,0,0,.35);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform .2s ease, background .2s ease;
+      z-index: 3;
+    }
+    .hero-arrow.hero-left { left: max(8px, calc((100% - 1200px) / 2 - 12px)); }
+    .hero-arrow.hero-right { right: max(8px, calc((100% - 1200px) / 2 - 12px)); }
+    .hero-arrow { opacity: 0; transform: translateY(-50%) scale(0.96); transition: opacity .2s ease, transform .2s ease, background .2s ease; }
+    .hero:hover .hero-arrow { opacity: 1; transform: translateY(-50%) scale(1); }
+    .hero-arrow:hover { background: rgba(0,0,0,.55); }
+    .hero-arrow:disabled { opacity: .45; cursor: not-allowed; }
+    .hero-count {
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.7);
+      min-width: 72px;
+      text-align: center;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 999px;
+      padding: 6px 10px;
+      align-self: flex-end;
+      margin-top: 10px;
+    }
     @media (max-width: 900px) {
-      .hero { min-height: 300px; }
+      .hero { min-height: 360px; }
       .hero-title { font-size: 30px; }
-      .hero-inner { padding: 28px 16px 32px; }
+      .hero-inner { padding: 28px 16px 32px; grid-template-columns: 1fr; position: relative; }
+      .hero-content {
+        order: 1;
+        position: relative;
+        z-index: 2;
+        background: rgba(5,6,30,.78);
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 16px;
+        padding: 18px;
+      }
+      .hero-media {
+        position: absolute;
+        inset: 0;
+        min-height: 100%;
+        order: 2;
+        z-index: 1;
+        pointer-events: none;
+      }
+      .hero-media img {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+        object-fit: cover;
+        border-radius: 0;
+      }
+      .hero-arrow { opacity: 1; }
     }
     @media (max-width: 600px) {
       .hero-title { font-size: 24px; }
@@ -368,19 +473,31 @@
       <div class="mega-inner" id="megaInner"></div>
     </div>
   </header>
-  <section class="hero" id="heroSection" style="--hero-img: url('https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1600&q=80');">
+  <section class="hero" id="heroSection">
     <div class="hero-inner">
-      <div class="hero-meta">In evidenza</div>
-      <div class="hero-cat">University Channel</div>
-      <h1 class="hero-title">Master di Comunicazione e Innovazione: una giornata in aula tra progetti e startup</h1>
-      <p class="hero-desc">Una panoramica delle lezioni, dei laboratori e delle iniziative che stanno trasformando il campus in un hub creativo.</p>
-      <div class="hero-actions">
-        <button class="hero-play" type="button">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 6l10 6-10 6V6z"></path></svg>
-          Riproduci
-        </button>
+      <div class="hero-content hero-slide">
+        <div class="hero-meta" id="heroMeta">In evidenza</div>
+        <div class="hero-cat" id="heroCat"></div>
+        <h1 class="hero-title" id="heroTitle">Caricamento…</h1>
+        <p class="hero-desc" id="heroDesc"></p>
+        <div class="hero-actions">
+          <a class="hero-play" id="heroPlay" href="#">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 6l10 6-10 6V6z"></path></svg>
+            Riproduci
+          </a>
+        </div>
+      </div>
+      <div class="hero-media hero-slide">
+        <img id="heroMediaImg" alt="" loading="eager" decoding="async">
+        <div class="hero-count" id="heroCount"></div>
       </div>
     </div>
+    <button class="hero-arrow hero-left" id="heroPrev" type="button" aria-label="Precedente">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"></path></svg>
+    </button>
+    <button class="hero-arrow hero-right" id="heroNext" type="button" aria-label="Successivo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"></path></svg>
+    </button>
   </section>
   <div class="banner" id="banner" style="display:none;">
     <a id="bannerLink" href="#" target="_blank" rel="noopener">
@@ -601,6 +718,15 @@
     const grid = document.getElementById('grid');
     const latestSection = document.getElementById('latestSection');
     const heroSection = document.getElementById('heroSection');
+    const heroMeta = document.getElementById('heroMeta');
+    const heroCat = document.getElementById('heroCat');
+    const heroTitle = document.getElementById('heroTitle');
+    const heroDesc = document.getElementById('heroDesc');
+    const heroPlay = document.getElementById('heroPlay');
+    const heroMediaImg = document.getElementById('heroMediaImg');
+    const heroPrev = document.getElementById('heroPrev');
+    const heroNext = document.getElementById('heroNext');
+    const heroCount = document.getElementById('heroCount');
     const latestGrid = document.getElementById('latestGrid');
     const latestSkeletons = document.getElementById('latestSkeletons');
     const status = document.getElementById('status');
@@ -861,6 +987,12 @@
         .replaceAll('>','&gt;')
         .replaceAll('"','&quot;')
         .replaceAll("'","&#039;");
+    }
+    function cssUrl(value) {
+      const raw = String(value ?? '').trim();
+      if (!raw) return 'none';
+      const safe = raw.replace(/["\\]/g, '\\$&');
+      return `url("${safe}")`;
     }
     function slugify(value) {
       return String(value ?? '')
@@ -1346,10 +1478,203 @@
       return path ? `${SITE_BASE}/${path}` : '';
     }
 
+    function heroCategoryFromItem(v) {
+      const cat = Array.isArray(v?.cat) && v.cat.length ? v.cat[0] : null;
+      return cat?.subcategory ?? cat?.category ?? v?.subcategory ?? v?.category ?? v?.categoria ?? '';
+    }
+    function heroImageFromItem(v) {
+      return v?.image ?? v?.thumbnail ?? v?.thumb ?? v?.poster ?? '';
+    }
+    function updateHeroNav() {
+      if (!heroPrev || !heroNext || !heroCount) return;
+      if (!heroItems.length) {
+        heroPrev.disabled = true;
+        heroNext.disabled = true;
+        heroCount.textContent = '';
+        return;
+      }
+      heroPrev.disabled = heroLoading;
+      heroNext.disabled = heroLoading;
+      heroCount.textContent = `${heroIndex + 1} / ${heroItems.length}`;
+    }
+    function stopHeroAutoplay() {
+      if (heroTimer) clearInterval(heroTimer);
+      heroTimer = null;
+    }
+    function startHeroAutoplay() {
+      stopHeroAutoplay();
+      if (!heroItems.length) return;
+      heroTimer = setInterval(() => {
+        if (heroHover) return;
+        loadHeroNext();
+      }, 5000);
+    }
+    function animateHeroSwap(cb) {
+      if (!heroSection) { cb(); return; }
+      heroSection.classList.remove('is-ready');
+      heroSection.classList.add('is-exit');
+      setTimeout(() => {
+        cb();
+        heroSection.classList.remove('is-exit');
+        requestAnimationFrame(() => heroSection.classList.add('is-ready'));
+      }, 240);
+    }
+    function renderHero() {
+      if (!heroSection || !heroItems.length) {
+        if (heroSection) heroSection.style.display = 'none';
+        return;
+      }
+      const v = heroItems[heroIndex];
+      if (!v) return;
+      const title = v.title ?? v['seo-title'] ?? 'In evidenza';
+      const desc = stripHtml(v.summary ?? v['seo-description'] ?? '');
+      const cat = heroCategoryFromItem(v);
+      const img = heroImageFromItem(v);
+      const path = contentPathFromItem(v);
+      animateHeroSwap(() => {
+        heroSection.style.display = 'block';
+        if (heroMeta) heroMeta.textContent = 'In evidenza';
+        if (heroCat) heroCat.textContent = cat;
+        if (heroTitle) heroTitle.textContent = title;
+        if (heroDesc) heroDesc.textContent = desc;
+        if (heroMediaImg) {
+          heroMediaImg.src = img || '';
+          heroMediaImg.alt = title ? String(title) : '';
+        }
+        if (heroPlay) {
+          heroPlay.href = path ? baseUrl(path) : '#';
+          heroPlay.dataset.path = path || '';
+        }
+        updateHeroNav();
+      });
+    }
+    function resetHeroState() {
+      heroItems = [];
+      heroIndex = 0;
+      heroOffset = 0;
+      heroLoading = false;
+      heroEnded = false;
+      stopHeroAutoplay();
+      updateHeroNav();
+    }
+    async function fetchHeroBatch(offsetValue) {
+      if (!heroSection) return [];
+      heroLoading = true;
+      updateHeroNav();
+      try {
+        const qs = new URLSearchParams();
+        if (aziendaId) qs.set('azienda_id', String(aziendaId));
+        qs.set('featured', '1');
+        qs.set('limit', String(heroLimit));
+        qs.set('offset', String(offsetValue));
+        const res = await fetch(`${baseUrl('api/featured.php')}?${qs.toString()}`, {
+          headers: { 'Accept': 'application/json' },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const items = extractItems(data) || [];
+        if (offsetValue === 0) heroItems = items;
+        else heroItems = heroItems.concat(items);
+        heroOffset = offsetValue + items.length;
+        if (items.length < heroLimit) heroEnded = true;
+        return items;
+      } catch (e) {
+        console.error(e);
+        if (heroSection) heroSection.style.display = 'none';
+        return [];
+      } finally {
+        heroLoading = false;
+        updateHeroNav();
+      }
+    }
+    async function loadHeroInitial() {
+      if (!heroSection) return;
+      resetHeroState();
+      await fetchHeroBatch(0);
+      if (!heroItems.length) {
+        heroSection.style.display = 'none';
+        return;
+      }
+      heroIndex = 0;
+      renderHero();
+      startHeroAutoplay();
+    }
+    async function loadHeroNext() {
+      if (heroLoading) return;
+      if (!heroItems.length) {
+        await loadHeroInitial();
+        return;
+      }
+      if (heroIndex < heroItems.length - 1) {
+        heroIndex += 1;
+        renderHero();
+        return;
+      }
+      if (heroEnded) {
+        heroIndex = 0;
+        renderHero();
+        return;
+      }
+      const prevLen = heroItems.length;
+      const newItems = await fetchHeroBatch(heroOffset);
+      if (newItems.length > 0) {
+        heroIndex = prevLen;
+      } else {
+        heroEnded = true;
+        heroIndex = 0;
+      }
+      renderHero();
+    }
+
+    if (heroPrev) {
+      heroPrev.addEventListener('click', () => {
+        if (!heroItems.length || heroLoading) return;
+        heroIndex = heroIndex > 0 ? heroIndex - 1 : heroItems.length - 1;
+        renderHero();
+      });
+    }
+    if (heroNext) {
+      heroNext.addEventListener('click', () => {
+        if (heroLoading) return;
+        loadHeroNext();
+      });
+    }
+    if (heroSection) {
+      heroSection.addEventListener('mouseenter', () => {
+        heroHover = true;
+        stopHeroAutoplay();
+      });
+      heroSection.addEventListener('mouseleave', () => {
+        heroHover = false;
+        startHeroAutoplay();
+      });
+    }
+    if (heroPlay) {
+      heroPlay.addEventListener('click', (e) => {
+        const path = heroPlay.dataset.path || '';
+        if (!path) {
+          e.preventDefault();
+          return;
+        }
+        const base = location.href.split('#')[0];
+        const from = `${base}#scroll=${window.scrollY || 0}`;
+        try { sessionStorage.setItem('vm:from', from); } catch {}
+        saveSearchState();
+      });
+    }
+
     const latestCount = 8;
     let latestItems = [];
     let latestRawCount = 0;
     const latestIds = new Set();
+    const heroLimit = 10;
+    let heroItems = [];
+    let heroIndex = 0;
+    let heroOffset = 0;
+    let heroLoading = false;
+    let heroEnded = false;
+    let heroTimer = null;
+    let heroHover = false;
     let featuredItems = [];
     let featuredIndex = 0;
     let featuredTimer = null;
@@ -1954,6 +2279,7 @@ function resetAndLoad() {
         updateHomeSectionsVisibility();
         if (isHomeNoFilters()) {
           loadLatest().then(() => resetAndLoad());
+          loadHeroInitial();
           loadFeatured();
         } else {
           resetAndLoad();
@@ -1987,6 +2313,7 @@ function resetAndLoad() {
       updateHomeSectionsVisibility();
       if (isHomeNoFilters()) {
         loadLatest().then(() => resetAndLoad());
+        loadHeroInitial();
         loadFeatured();
       }
     }
@@ -2011,6 +2338,7 @@ function resetAndLoad() {
         loadSubcatLabel();
         if (isHomeNoFilters()) {
           loadLatest().then(() => resetAndLoad());
+          loadHeroInitial();
           loadFeatured();
         } else {
           resetAndLoad();
@@ -2060,7 +2388,8 @@ function resetAndLoad() {
       const mainApplied = applyMainSSR();
       const latestPromise = latestApplied ? Promise.resolve() : loadLatest();
       const featuredPromise = featuredApplied ? Promise.resolve() : loadFeatured();
-      Promise.all([latestPromise, featuredPromise]).finally(() => {
+      const heroPromise = loadHeroInitial();
+      Promise.all([latestPromise, featuredPromise, heroPromise]).finally(() => {
         if (!mainApplied) {
           offset = latestItems.length || 0;
           loadNextPage().then(ensureFillViewport);
@@ -2070,6 +2399,8 @@ function resetAndLoad() {
       });
     } else {
       if (latestSection) latestSection.style.display = 'none';
+      if (heroSection) heroSection.style.display = 'none';
+      resetHeroState();
       if (featuredSection) featuredSection.style.display = 'none';
       if (!applyMainSSR()) {
         loadNextPage()
