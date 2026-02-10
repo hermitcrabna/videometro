@@ -149,6 +149,29 @@
     .featured-wrap { margin: 0; padding: 0; }
     .featured { position:relative; overflow:hidden; border-radius:16px; }
     .featured-track { display:flex; gap:16px; transition: transform .6s ease; }
+    .featured-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.25);
+      background: rgba(0,0,0,.35);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform .2s ease, opacity .2s ease, background .2s ease;
+      z-index: 2;
+      opacity: 0;
+    }
+    .featured-arrow:hover { background: rgba(0,0,0,.55); }
+    .featured-arrow:disabled { opacity: .35; cursor: not-allowed; }
+    .featured-arrow.left { left: 8px; }
+    .featured-arrow.right { right: 8px; }
+    .featured:hover .featured-arrow { opacity: 1; transform: translateY(-50%) scale(1); }
     .f-slide { min-width: calc((100% - 16px) / 2); background: rgba(30,39,70,0.85); border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.08); position:relative; cursor:pointer; display:flex; flex-direction:column; }
     .f-thumb { width:100%; aspect-ratio: 16/9; object-fit:cover; display:block; opacity:0; filter: blur(8px); transform: scale(1.01); transition: opacity .6s ease, filter .6s ease, transform .6s ease; }
     .f-thumb.is-loaded { opacity:1; filter: blur(0); transform: scale(1); }
@@ -481,10 +504,7 @@
         <h1 class="hero-title" id="heroTitle">Caricamento…</h1>
         <p class="hero-desc" id="heroDesc"></p>
         <div class="hero-actions">
-          <a class="hero-play" id="heroPlay" href="#">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 6l10 6-10 6V6z"></path></svg>
-            Riproduci
-          </a>
+          <a class="hero-play" id="heroPlay" href="#"></a>
         </div>
       </div>
       <div class="hero-media hero-slide">
@@ -568,7 +588,13 @@
       <h2 class="section-title">Categorie in evidenza</h2>
       <div class="featured-wrap" id="featuredWrap">
         <div class="featured">
+          <button class="featured-arrow left" id="featuredPrev" type="button" aria-label="Precedente">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"></path></svg>
+          </button>
           <div class="featured-track" id="featuredTrack"></div>
+          <button class="featured-arrow right" id="featuredNext" type="button" aria-label="Successivo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"></path></svg>
+          </button>
         </div>
       </div>
     </section>
@@ -761,6 +787,8 @@
     const featuredSection = document.getElementById('featuredSection');
     const featuredWrap = document.getElementById('featuredWrap');
     const featuredTrack = document.getElementById('featuredTrack');
+    const featuredPrev = document.getElementById('featuredPrev');
+    const featuredNext = document.getElementById('featuredNext');
     let bannerDesktopUrl = '';
     let bannerMobileUrl = '';
     let bannerWebsiteUrl = '';
@@ -1394,6 +1422,18 @@
       return typeIcon('video', 'Video', ICON_VIDEO);
     }
 
+    function heroCtaForItem(v) {
+      const isBlog = toFlag(v?.blog) || Boolean(v?.slug_post);
+      const isGallery = toFlag(v?.gallery);
+      if (isBlog) {
+        return { icon: ICON_BLOG, label: 'LEGGI L\'ARTICOLO' };
+      }
+      if (isGallery) {
+        return { icon: ICON_GALLERY, label: 'VEDI LA GALLERY' };
+      }
+      return { icon: ICON_VIDEO, label: 'RIPRODUCI IL VIDEO' };
+    }
+
     function toFlag(val) {
       const n = parseInt(String(val ?? '0').trim(), 10);
       return Number.isFinite(n) && n === 1;
@@ -1544,6 +1584,8 @@
         if (heroPlay) {
           heroPlay.href = path ? baseUrl(path) : '#';
           heroPlay.dataset.path = path || '';
+          const cta = heroCtaForItem(v);
+          heroPlay.innerHTML = `${cta.icon}<span>${escapeHtml(cta.label)}</span>`;
         }
         updateHeroNav();
       });
@@ -1793,6 +1835,18 @@
       }
     }
 
+    function updateFeaturedNav() {
+      if (!featuredPrev || !featuredNext) return;
+      const perView = window.matchMedia('(max-width: 900px)').matches ? 1 : 2;
+      const maxIndex = Math.max(0, featuredItems.length - perView);
+      featuredPrev.disabled = featuredItems.length === 0;
+      featuredNext.disabled = featuredItems.length === 0;
+      if (maxIndex === 0) {
+        featuredPrev.disabled = true;
+        featuredNext.disabled = true;
+      }
+    }
+
     function updateFeaturedPosition() {
       const slideEl = featuredTrack.firstElementChild;
       if (!slideEl) return;
@@ -1801,6 +1855,7 @@
       const maxIndex = Math.max(0, featuredItems.length - perView);
       if (featuredIndex > maxIndex) featuredIndex = 0;
       featuredTrack.style.transform = `translateX(${-featuredIndex * slideWidth}px)`;
+      updateFeaturedNav();
     }
 
     function startFeaturedAutoplay() {
@@ -1838,6 +1893,7 @@
         });
         renderFeatured();
         startFeaturedAutoplay();
+        updateFeaturedNav();
       } catch (e) {
         console.error(e);
         if (featuredSection) featuredSection.style.display = 'none';
@@ -1916,7 +1972,29 @@
       });
       renderFeatured();
       startFeaturedAutoplay();
+      updateFeaturedNav();
       return true;
+    }
+
+    if (featuredPrev) {
+      featuredPrev.addEventListener('click', () => {
+        if (!featuredItems.length) return;
+        const perView = window.matchMedia('(max-width: 900px)').matches ? 1 : 2;
+        const maxIndex = Math.max(0, featuredItems.length - perView);
+        featuredIndex = featuredIndex > 0 ? featuredIndex - 1 : maxIndex;
+        updateFeaturedPosition();
+        startFeaturedAutoplay();
+      });
+    }
+    if (featuredNext) {
+      featuredNext.addEventListener('click', () => {
+        if (!featuredItems.length) return;
+        const perView = window.matchMedia('(max-width: 900px)').matches ? 1 : 2;
+        const maxIndex = Math.max(0, featuredItems.length - perView);
+        featuredIndex = featuredIndex >= maxIndex ? 0 : featuredIndex + 1;
+        updateFeaturedPosition();
+        startFeaturedAutoplay();
+      });
     }
 
     const schemaItems = [];
