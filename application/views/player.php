@@ -26,9 +26,9 @@
   ?></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-    :root { --bg:#0f1115; --bar:#1f2740; --bar-border:#2b3554; --text:#fff; --muted:rgba(255,255,255,.72); --accent:<?= htmlspecialchars($aziendaColor) ?>; }
+    :root { --bg:#05061e; --bar:#1f2740; --bar-border:#2b3554; --text:#fff; --muted:rgba(255,255,255,.72); --accent:<?= htmlspecialchars($aziendaColor) ?>; }
     body { min-height:100vh; display:flex; flex-direction:column; margin:0; font-family: system-ui, Arial; background:var(--bg); color:var(--text); }
-    .topbar { position: sticky; top: 0; z-index: 50; background: rgba(31,39,64,0.92); border-bottom: 1px solid var(--bar-border); backdrop-filter: blur(6px); }
+    .topbar { position: sticky; top: 0; z-index: 50; background: rgba(30,39,70,0.85); border-bottom: 1px solid var(--bar-border); backdrop-filter: blur(6px); }
     .topbar-inner { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display:flex; align-items:center; gap: 14px; }
     .spacer { flex:1; }
     .back { color: var(--muted); text-decoration:none; font-size: 14px; padding: 8px 14px; border-radius: 999px; transition: background .2s ease, color .2s ease; }
@@ -39,7 +39,7 @@
     .brand.loading .brand-text { opacity: 0; }
     .brand.loading .brand-skeleton { display:inline-block; }
     
-    .site-footer { margin-top: 46px; padding: 28px 16px 40px; background: #0d1018; border-top: 1px solid rgba(255,255,255,.06); }
+    .site-footer { margin-top: 46px; padding: 28px 16px 40px; background: #05061e; border-top: 1px solid rgba(255,255,255,.06); }
     .footer-inner { max-width: 1200px; margin: 0 auto; display:flex; flex-direction:column; gap: 18px; }
     .footer-top { display:flex; align-items:center; justify-content:space-between; gap: 16px; flex-wrap:wrap; }
     .footer-links { display:flex; gap: 14px; align-items:center; font-size: 14px; }

@@ -9,7 +9,7 @@ $home = $dir === '' ? '/' : $dir . '/';
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Errore database – VideoMetro</title>
   <style>
-    :root { --bg:#0f1115; --text:#fff; --muted:rgba(255,255,255,.72); --accent:#ff2d2d; }
+    :root { --bg:#05061e; --text:#fff; --muted:rgba(255,255,255,.72); --accent:#ff2d2d; }
     body { margin:0; font-family: system-ui, Arial, sans-serif; background:var(--bg); color:var(--text); }
     .wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:24px; }
     .box { max-width:720px; }
