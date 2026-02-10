@@ -3,6 +3,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" href="https://www.videometro.tv/icon/icon-videometro-touch.png" type="png"/>
+  <link rel="apple-touch-icon" href="https://www.videometro.tv/icon/icon-videometro-touch.png">
 	<meta charset="utf-8">
 	<title>Welcome to CodeIgniter</title>
 
