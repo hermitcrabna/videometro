@@ -5,6 +5,8 @@ $home = $dir === '' ? '/' : $dir . '/';
 ?><!doctype html>
 <html lang="it">
 <head>
+  <link rel="icon" href="https://www.videometro.tv/icon/icon-videometro-touch.png" type="png"/>
+  <link rel="apple-touch-icon" href="https://www.videometro.tv/icon/icon-videometro-touch.png">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Errore database – VideoMetro</title>
