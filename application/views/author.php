@@ -175,12 +175,12 @@
     .share-panel a:hover { background:rgba(255,255,255,.08); }
 
     .loader, .error { padding: 14px; text-align:center; opacity:.85; }
-    .skeletons { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:14px; }
+    .skeletons { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:14px; min-width:0; box-sizing:border-box; margin-top:14px; }
     .inline-banner { grid-column: 1 / -1; }
     .inline-banner img { width:100%; height:auto; border-radius:14px; display:block; }
     .s-card { background:#303a52; border-radius:14px; border:1px solid rgba(255,255,255,.06); overflow:hidden; position:relative; }
     .s-thumb { aspect-ratio:16/9; background: linear-gradient(90deg, #2b3248 25%, #36405c 50%, #2b3248 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; }
-    .s-body { min-height:100vh; display:flex; flex-direction:column; padding:12px 14px 14px; display:flex; flex-direction:column; gap:10px; }
+    .s-body { min-height:56px; display:flex; flex-direction:column; padding:12px 14px 14px; display:flex; flex-direction:column; gap:10px; }
     .s-line { height:10px; border-radius:6px; background: #2b3248; }
     .s-line.w1 { width:70%; }
     .s-line.w2 { width:50%; }
