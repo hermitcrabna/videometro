@@ -184,10 +184,10 @@
     .share-panel svg { width:18px; height:18px; }
     .share-panel a:hover { background:rgba(255,255,255,.08); }
     .loader, .error { padding: 14px; text-align:center; opacity:.85; }
-    .skeletons { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:14px; }
+    .skeletons { display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:14px; min-width:0; box-sizing:border-box; margin-top:14px; }
     .s-card { background:#2a334a; border-radius:14px; border:1px solid rgba(255,255,255,.06); overflow:hidden; position:relative; display:flex; flex-direction:column; }
     .s-thumb { aspect-ratio:16/9; background: linear-gradient(90deg, #2f3850 25%, #3a4563 50%, #2f3850 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; }
-    .s-body { min-height:100vh; display:flex; flex-direction:column; padding:12px 14px 10px; display:flex; flex-direction:column; gap:10px; }
+    .s-body { min-height:56px; display:flex; flex-direction:column; padding:12px 14px 10px; display:flex; flex-direction:column; gap:10px; }
     .s-line { height:10px; border-radius:6px; background: #3a4563; }
     .s-line.w1 { width:70%; }
     .s-line.w2 { width:50%; }
