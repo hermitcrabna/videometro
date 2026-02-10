@@ -246,6 +246,7 @@
         var(--hero-img);
       background-size: cover;
       background-position: center right;
+      z-index: 0;
     }
     .hero::after {
       content: '';
@@ -256,9 +257,11 @@
       height: 120px;
       background: linear-gradient(180deg, rgba(5,6,30,0) 0%, var(--bg) 100%);
       pointer-events: none;
+      z-index: 1;
     }
     .hero-inner {
       position: relative;
+      z-index: 2;
       max-width: 1200px;
       margin: 0 auto;
       padding: 42px 16px 48px;
@@ -272,6 +275,8 @@
     .hero-desc { font-size: 16px; line-height: 1.6; color: rgba(255,255,255,.78); max-width: 640px; margin: 6px 0 10px; }
     .hero-actions { display:flex; align-items:center; gap:12px; margin-top: 8px; }
     .hero-play {
+      position: relative;
+      z-index: 3;
       display: inline-flex;
       align-items: center;
       gap: 10px;
