@@ -1114,7 +1114,7 @@
           if (rendered > 0 && rendered !== offset) offset = rendered;
         }
         const qs = new URLSearchParams();
-        if (aziendaId) qs.set('azienda_id', String(aziendaId));
+        qs.set('azienda_id', String(aziendaId));
         qs.set('limit', '1');
         qs.set('offset', '0');
         qs.set('blog', '1');
@@ -1722,6 +1722,10 @@
     let featuredTimer = null;
     let featuredResizeBound = false;
     const featuredIds = new Set();
+    const featuredLimit = 10;
+    let featuredOffset = 0;
+    let featuredLoading = false;
+    let featuredEnded = false;
     let mainRenderCount = 0;
 
     function renderFeatured() {
@@ -1841,6 +1845,11 @@
       const maxIndex = Math.max(0, featuredItems.length - perView);
       featuredPrev.disabled = featuredItems.length === 0;
       featuredNext.disabled = featuredItems.length === 0;
+      if (featuredLoading) {
+        featuredPrev.disabled = true;
+        featuredNext.disabled = true;
+        return;
+      }
       if (maxIndex === 0) {
         featuredPrev.disabled = true;
         featuredNext.disabled = true;
@@ -1865,19 +1874,30 @@
       if (maxIndex === 0) return;
       featuredTimer = setInterval(() => {
         if (!featuredItems.length) return;
-        featuredIndex = featuredIndex >= maxIndex ? 0 : featuredIndex + 1;
+        if (featuredLoading) return;
+        if (featuredIndex >= maxIndex) {
+          if (featuredEnded) {
+            featuredIndex = 0;
+            updateFeaturedPosition();
+            return;
+          }
+          loadFeaturedNextBatch(true);
+          return;
+        }
+        featuredIndex += 1;
         updateFeaturedPosition();
       }, 4000);
     }
 
-    async function loadFeatured() {
-      if (!featuredTrack || !featuredWrap || !featuredSection) return;
-      featuredTrack.innerHTML = '';
+    async function fetchFeaturedBatch(offsetValue) {
+      if (!featuredTrack || !featuredWrap || !featuredSection) return [];
+      featuredLoading = true;
+      updateFeaturedNav();
       try {
         const qs = new URLSearchParams();
         if (aziendaId) qs.set('azienda_id', String(aziendaId));
-        qs.set('limit', '10');
-        qs.set('offset', '0');
+        qs.set('limit', String(featuredLimit));
+        qs.set('offset', String(offsetValue));
         qs.set('featured', '1');
         const res = await fetch(`${baseUrl('api/videos.php')}?${qs.toString()}`, {
           headers: { 'Accept': 'application/json' },
@@ -1885,20 +1905,63 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const rawItems = extractItems(data) || [];
-        featuredItems = rawItems;
-        featuredIds.clear();
-        featuredItems.forEach(v => {
+        const newItems = [];
+        rawItems.forEach(v => {
           const id = v.id ?? v.video_id;
-          if (id) featuredIds.add(String(id));
+          const key = id ? String(id) : '';
+          if (key && featuredIds.has(key)) return;
+          if (key) featuredIds.add(key);
+          newItems.push(v);
         });
-        renderFeatured();
-        startFeaturedAutoplay();
-        updateFeaturedNav();
+        if (offsetValue === 0) featuredItems = newItems;
+        else featuredItems = featuredItems.concat(newItems);
+        featuredOffset = offsetValue + rawItems.length;
+        if (rawItems.length < featuredLimit) featuredEnded = true;
+        return newItems;
       } catch (e) {
         console.error(e);
         if (featuredSection) featuredSection.style.display = 'none';
         featuredWrap.style.display = 'none';
+        return [];
+      } finally {
+        featuredLoading = false;
+        updateFeaturedNav();
       }
+    }
+
+    async function loadFeatured() {
+      if (!featuredTrack || !featuredWrap || !featuredSection) return;
+      featuredTrack.innerHTML = '';
+      featuredItems = [];
+      featuredIndex = 0;
+      featuredOffset = 0;
+      featuredEnded = false;
+      featuredIds.clear();
+      const batch = await fetchFeaturedBatch(0);
+      if (!batch.length) return;
+      renderFeatured();
+      startFeaturedAutoplay();
+      updateFeaturedNav();
+    }
+
+    async function loadFeaturedNextBatch(fromAutoplay = false) {
+      if (featuredLoading || featuredEnded) return;
+      const prevLen = featuredItems.length;
+      const batch = await fetchFeaturedBatch(featuredOffset);
+      if (!batch.length) {
+        featuredEnded = true;
+        if (fromAutoplay) {
+          featuredIndex = 0;
+          updateFeaturedPosition();
+        }
+        return;
+      }
+      renderFeatured();
+      if (fromAutoplay) {
+        featuredIndex = prevLen;
+        updateFeaturedPosition();
+      }
+      startFeaturedAutoplay();
     }
 
     async function loadLatest() {
@@ -1970,6 +2033,8 @@
         const id = v.id ?? v.video_id;
         if (id) featuredIds.add(String(id));
       });
+      featuredOffset = featuredItems.length;
+      featuredEnded = featuredItems.length < featuredLimit;
       renderFeatured();
       startFeaturedAutoplay();
       updateFeaturedNav();
@@ -1991,7 +2056,17 @@
         if (!featuredItems.length) return;
         const perView = window.matchMedia('(max-width: 900px)').matches ? 1 : 2;
         const maxIndex = Math.max(0, featuredItems.length - perView);
-        featuredIndex = featuredIndex >= maxIndex ? 0 : featuredIndex + 1;
+        if (featuredIndex >= maxIndex) {
+          if (featuredEnded) {
+            featuredIndex = 0;
+            updateFeaturedPosition();
+            startFeaturedAutoplay();
+            return;
+          }
+          loadFeaturedNextBatch(false);
+          return;
+        }
+        featuredIndex += 1;
         updateFeaturedPosition();
         startFeaturedAutoplay();
       });
