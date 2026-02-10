@@ -528,6 +528,14 @@
     
     
     
+    function normalizeAzienda(data) {
+      if (!data) return null;
+      if (Array.isArray(data)) return data[0] || null;
+      if (data.id || data.name || data.url || data.banner) return data;
+      const vals = Object.values(data);
+      return vals && vals.length ? vals[0] : null;
+    }
+
     function renderFooter(a) {
       const siteFooterEl = document.getElementById('siteFooter');
       const footerLogoEl = document.getElementById('footerLogo');
@@ -562,16 +570,16 @@
         });
         if (!res.ok) return;
         const data = await res.json();
-        let a = Array.isArray(data) ? data[0] : data;
-        if (a && typeof a === 'object' && !a.name && a[0]) a = a[0];
-        if (!a) return;
-        if (a.color_point) {
-          document.documentElement.style.setProperty('--accent', a.color_point);
+        const item = normalizeAzienda(data?.data ?? data);
+        if (!item) return;
+        if (item.color_point) {
+          document.documentElement.style.setProperty('--accent', item.color_point);
         }
-        const name = (a.name || '').trim();
+        const name = (item.name || '').trim();
         if (name) {
           if (brandText) brandText.innerHTML = renderLogo(name);
         }
+        renderFooter(item);
       } catch {}
       if (brandLogo) brandLogo.classList.remove('loading');
     }
